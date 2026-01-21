@@ -1,20 +1,21 @@
 import os
 
-# FUNÇÃO separada que sempre retorna string
+# Função que monta a URI do banco
 def get_database_uri():
-    uri = os.getenv('DATABASE_URL')
-    
-    if not uri:
-        # Local development - SQLite
-        return 'sqlite:///matchmovies.db'
-    
-    # If Supabase in production, add SSL
-    if 'supabase' in uri and 'sslmode' not in uri:
-        return uri + '?sslmode=require'
-    
-    return uri
+    db_user = os.getenv('DB_USER')
+    db_password = os.getenv('DB_PASSWORD')
+    db_host = os.getenv('DB_HOST')
+    db_port = os.getenv('DB_PORT', 5432)
+    db_name = os.getenv('DB_NAME')
 
-# CHAMA a função para obter a string
+    # Se faltar algum valor, usa SQLite local (desenvolvimento)
+    if not all([db_user, db_password, db_host, db_name]):
+        return 'sqlite:///matchmovies.db'
+
+    # URI PostgreSQL para produção
+    return f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}?sslmode=require'
+
+# Chama a função para obter a string
 DATABASE_URI = get_database_uri()
 
 class Config:
@@ -22,7 +23,7 @@ class Config:
     DEBUG = False
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = DATABASE_URI  # STRING, não property!
+    SQLALCHEMY_DATABASE_URI = DATABASE_URI
 
 class DevelopmentConfig(Config):
     DEBUG = True
