@@ -1,7 +1,6 @@
 import os
 
 def get_database_uri():
-    # O app.py vai definir isso
     return os.getenv('DATABASE_URL', 'sqlite:///matchmovies.db')
 
 DATABASE_URI = get_database_uri()
