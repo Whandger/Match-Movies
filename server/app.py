@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
-from server.config.config import ProductionConfig, DevelopmentConfig  # Import correto
+from server.config.config import ProductionConfig, DevelopmentConfig
 
 # Instância global do SQLAlchemy
 db = SQLAlchemy()
@@ -24,6 +24,9 @@ def create_app():
     else:
         app.config.from_object(DevelopmentConfig)
 
+    # LOG TEMPORÁRIO para debug
+    print(f"DEBUG - Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+    
     # Inicializa o SQLAlchemy com a app
     db.init_app(app)
     app.extensions['db'] = db
