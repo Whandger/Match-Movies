@@ -10,7 +10,7 @@ movies_bp = Blueprint('movies', __name__)
 TMDB_API_KEY = '941fae9e612c2f209e18d77a5a760269'
 
 # ============================================================================
-# SISTEMA DE MATCHES - VERSÃO FINAL
+# SISTEMA DE MATCHES - VERSÃO FINAL CORRIGIDA
 # ============================================================================
 
 def check_and_create_matches(user_id, movie_id, action):
@@ -50,6 +50,9 @@ def check_and_create_matches(user_id, movie_id, action):
             
             print(f"🔍 Verificando conexão {connection_id} com parceiro {partner_id}")
             
+            # ⚠️ CORREÇÃO: Converter movie_id para string para comparar com VARCHAR
+            movie_id_str = str(movie_id)
+            
             # Verificar se o parceiro também curtiu/indicou este filme
             partner_reaction = db.session.execute(
                 text("""
@@ -59,10 +62,10 @@ def check_and_create_matches(user_id, movie_id, action):
                     AND movie_id = :movie_id 
                     AND action IN ('like', 'indicate')
                 """),
-                {'partner_id': partner_id, 'movie_id': movie_id}
+                {'partner_id': partner_id, 'movie_id': movie_id_str}  # Usar movie_id_str
             ).scalar()
             
-            print(f"📌 Parceiro {partner_id} reagiu ao filme {movie_id}? {partner_reaction > 0}")
+            print(f"📌 Parceiro {partner_id} reagiu ao filme {movie_id_str}? {partner_reaction > 0}")
             
             if partner_reaction > 0:
                 print(f"🎉 MATCH ENCONTRADO! Usuários {user_id} e {partner_id} curtiram o filme {movie_id}")
@@ -118,7 +121,7 @@ def check_and_create_matches(user_id, movie_id, action):
             db.session.rollback()
 
 # ============================================================================
-# ROTA PARA REGISTRAR AÇÃO
+# ROTA PARA REGISTRAR AÇÃO - CORRIGIDA
 # ============================================================================
 
 @movies_bp.route('/action', methods=['POST'])
@@ -144,6 +147,9 @@ def register_action():
         if db is None:
             return jsonify({'error': 'Database não configurado'}), 500
         
+        # ⚠️ CORREÇÃO: Converter movie_id para string para armazenar como VARCHAR
+        movie_id_str = str(movie_id)
+        
         # Inserir ou atualizar a reação
         db.session.execute(
             text("""
@@ -152,7 +158,7 @@ def register_action():
                 ON CONFLICT (user_id, movie_id) 
                 DO UPDATE SET action = EXCLUDED.action, reacted_at = CURRENT_TIMESTAMP
             """),
-            {'user_id': user_id, 'movie_id': movie_id, 'action': action}
+            {'user_id': user_id, 'movie_id': movie_id_str, 'action': action}  # Usar movie_id_str
         )
         
         db.session.commit()
@@ -178,7 +184,7 @@ def register_action():
         return jsonify({'success': False, 'error': str(e)[:100]}), 500
 
 # ============================================================================
-# ROTA PARA BUSCAR MATCHES
+# ROTA PARA BUSCAR MATCHES - JÁ ESTÁ CORRETA
 # ============================================================================
 
 @movies_bp.route('/matches')
@@ -269,8 +275,177 @@ def get_matches():
         return jsonify({'success': False, 'error': str(e)[:100]}), 500
 
 # ============================================================================
-# ROTA PARA OBTER DETALHES DE UM FILME
+# SISTEMA DE FILMES ALEATÓRIOS - CORRIGIDO
 # ============================================================================
+
+@movies_bp.route('/random')
+def random_movie():
+    """Busca um filme aleatório que o usuário ainda não reagiu"""
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'Usuário não logado'}), 401
+        
+        user_id = session['user_id']
+        db = current_app.extensions.get('db')
+        
+        if db is None:
+            return jsonify({'error': 'Database não configurado'}), 500
+        
+        print(f"🎲 Buscando filme aleatório para user_id={user_id}")
+        
+        # Buscar filmes que o usuário já reagiu
+        seen_movies_result = db.session.execute(
+            text('SELECT movie_id FROM "MoviesReacted" WHERE user_id = :user_id'),
+            {'user_id': user_id}
+        ).fetchall()
+        
+        # ⚠️ CORREÇÃO: Converter para string para comparar corretamente
+        seen_movies = [str(row[0]) for row in seen_movies_result]
+        
+        print(f"📊 Usuário já viu {len(seen_movies)} filmes")
+        
+        # Categorias
+        categories = {
+            "popular": 700,
+            "top_rated": 700, 
+            "now_playing": 10,
+            "upcoming": 10
+        }
+        
+        max_attempts = 10
+        
+        for attempt in range(max_attempts):
+            try:
+                chosen_category = random.choice(list(categories.keys()))
+                max_page = categories[chosen_category]
+                random_page = random.randint(1, max_page)
+                
+                url = f"https://api.themoviedb.org/3/movie/{chosen_category}?api_key={TMDB_API_KEY}&language=pt-BR&page={random_page}"
+                response = requests.get(url, timeout=5)
+                
+                if response.status_code != 200:
+                    continue
+                
+                data = response.json()
+                
+                if data.get('results'):
+                    valid_movies = [
+                        movie for movie in data['results'] 
+                        if (movie.get('vote_average', 0) >= 6.0 and 
+                            movie.get('poster_path') and
+                            movie.get('overview') and
+                            str(movie.get('id')) not in seen_movies)  # Já está comparando como string
+                    ]
+                    
+                    if not valid_movies:
+                        continue
+                    
+                    movie = random.choice(valid_movies)
+                    movie_id = movie.get('id')
+                    
+                    details_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&language=pt-BR"
+                    details_response = requests.get(details_url, timeout=5)
+                    
+                    if details_response.status_code != 200:
+                        continue
+                    
+                    details_data = details_response.json()
+                    
+                    genres = []
+                    if details_data.get('genres'):
+                        genres = [genre['name'] for genre in details_data['genres']]
+                    
+                    # Buscar trailer
+                    trailer_url = None
+                    videos_url = f"https://api.themoviedb.org/3/movie/{movie_id}/videos"
+                    videos_response = requests.get(
+                        videos_url,
+                        params={'api_key': TMDB_API_KEY, 'language': 'pt-BR'},
+                        timeout=5
+                    )
+                    
+                    if videos_response.status_code == 200:
+                        videos_data = videos_response.json()
+                        for video in videos_data.get('results', []):
+                            if video.get('type') == 'Trailer' and video.get('site') == 'YouTube':
+                                youtube_key = video.get('key')
+                                if youtube_key:
+                                    trailer_url = f"https://www.youtube.com/watch?v={youtube_key}"
+                                    break
+                    
+                    vote_average = movie.get('vote_average', 0)
+                    if vote_average is None:
+                        vote_average = 0
+                        
+                    release_date = movie.get('release_date', '')
+                    release_year = release_date.split('-')[0] if release_date else ''
+                    
+                    print(f"✅ Filme encontrado: {movie.get('title')} (ID: {movie_id})")
+                    
+                    return jsonify({
+                        'success': True,
+                        'title': movie.get('title', 'Título não disponível'),
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path', '')}" if movie.get('backdrop_path') else '',
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path', '')}" if movie.get('poster_path') else '',
+                        'overview': movie.get('overview', 'Descrição não disponível'),
+                        'id': movie_id,
+                        'vote_average': round(vote_average, 1),
+                        'release_year': release_year,
+                        'genres': genres,
+                        'category': chosen_category,
+                        'trailer_url': trailer_url,
+                        'attempts': attempt + 1,
+                        'total_seen': len(seen_movies)
+                    })
+                    
+            except requests.exceptions.Timeout:
+                continue
+            except Exception as e:
+                continue
+        
+        return jsonify({
+            'success': False,
+            'error': 'Você já reagiu a todos os filmes disponíveis!',
+            'total_seen': len(seen_movies)
+        }), 404
+        
+    except Exception as e:
+        print(f"❌ ERROR crítico: {str(e)}")
+        return jsonify({'success': False, 'error': 'Erro interno do servidor'}), 500
+
+# ============================================================================
+# OUTRAS ROTAS (mantidas iguais)
+# ============================================================================
+
+def get_movie_trailer(movie_id):
+    """Busca o trailer do filme na API do TMDB"""
+    try:
+        videos_url = f"https://api.themoviedb.org/3/movie/{movie_id}/videos"
+        videos_response = requests.get(
+            videos_url,
+            params={'api_key': TMDB_API_KEY, 'language': 'pt-BR'},
+            timeout=5
+        )
+        
+        if videos_response.status_code == 200:
+            videos_data = videos_response.json()
+            
+            for video in videos_data.get('results', []):
+                if video.get('type') == 'Trailer' and video.get('site') == 'YouTube':
+                    youtube_key = video.get('key')
+                    if youtube_key:
+                        return f"https://www.youtube.com/watch?v={youtube_key}"
+            
+            for video in videos_data.get('results', []):
+                if video.get('site') == 'YouTube' and video.get('key'):
+                    youtube_key = video.get('key')
+                    return f"https://www.youtube.com/watch?v={youtube_key}"
+        
+        return None
+        
+    except Exception as e:
+        print(f"Erro ao buscar trailer: {e}")
+        return None
 
 @movies_bp.route('/movie/<int:movie_id>')
 def get_movie_details(movie_id):
@@ -321,162 +496,6 @@ def get_movie_details(movie_id):
     except Exception as e:
         print(f"❌ ERROR ao buscar detalhes do filme: {str(e)}")
         return jsonify({'success': False, 'error': str(e)[:100]}), 500
-
-# ============================================================================
-# SISTEMA DE FILMES ALEATÓRIOS (mantido)
-# ============================================================================
-
-def get_movie_trailer(movie_id):
-    """Busca o trailer do filme na API do TMDB"""
-    try:
-        videos_url = f"https://api.themoviedb.org/3/movie/{movie_id}/videos"
-        videos_response = requests.get(
-            videos_url,
-            params={'api_key': TMDB_API_KEY, 'language': 'pt-BR'},
-            timeout=5
-        )
-        
-        if videos_response.status_code == 200:
-            videos_data = videos_response.json()
-            
-            for video in videos_data.get('results', []):
-                if video.get('type') == 'Trailer' and video.get('site') == 'YouTube':
-                    youtube_key = video.get('key')
-                    if youtube_key:
-                        return f"https://www.youtube.com/watch?v={youtube_key}"
-            
-            for video in videos_data.get('results', []):
-                if video.get('site') == 'YouTube' and video.get('key'):
-                    youtube_key = video.get('key')
-                    return f"https://www.youtube.com/watch?v={youtube_key}"
-        
-        return None
-        
-    except Exception as e:
-        print(f"Erro ao buscar trailer: {e}")
-        return None
-
-@movies_bp.route('/random')
-def random_movie():
-    """Busca um filme aleatório que o usuário ainda não reagiu"""
-    try:
-        if 'user_id' not in session:
-            return jsonify({'error': 'Usuário não logado'}), 401
-        
-        user_id = session['user_id']
-        db = current_app.extensions.get('db')
-        
-        if db is None:
-            return jsonify({'error': 'Database não configurado'}), 500
-        
-        print(f"🎲 Buscando filme aleatório para user_id={user_id}")
-        
-        # Buscar filmes que o usuário já reagiu
-        seen_movies_result = db.session.execute(
-            text('SELECT movie_id FROM "MoviesReacted" WHERE user_id = :user_id'),
-            {'user_id': user_id}
-        ).fetchall()
-        
-        seen_movies = [str(row[0]) for row in seen_movies_result]
-        
-        print(f"📊 Usuário já viu {len(seen_movies)} filmes")
-        
-        # Categorias
-        categories = {
-            "popular": 700,
-            "top_rated": 700, 
-            "now_playing": 10,
-            "upcoming": 10
-        }
-        
-        max_attempts = 10
-        
-        for attempt in range(max_attempts):
-            try:
-                chosen_category = random.choice(list(categories.keys()))
-                max_page = categories[chosen_category]
-                random_page = random.randint(1, max_page)
-                
-                url = f"https://api.themoviedb.org/3/movie/{chosen_category}?api_key={TMDB_API_KEY}&language=pt-BR&page={random_page}"
-                response = requests.get(url, timeout=5)
-                
-                if response.status_code != 200:
-                    continue
-                
-                data = response.json()
-                
-                if data.get('results'):
-                    valid_movies = [
-                        movie for movie in data['results'] 
-                        if (movie.get('vote_average', 0) >= 6.0 and 
-                            movie.get('poster_path') and
-                            movie.get('overview') and
-                            str(movie.get('id')) not in seen_movies)
-                    ]
-                    
-                    if not valid_movies:
-                        continue
-                    
-                    movie = random.choice(valid_movies)
-                    movie_id = movie.get('id')
-                    
-                    details_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&language=pt-BR"
-                    details_response = requests.get(details_url, timeout=5)
-                    
-                    if details_response.status_code != 200:
-                        continue
-                    
-                    details_data = details_response.json()
-                    
-                    genres = []
-                    if details_data.get('genres'):
-                        genres = [genre['name'] for genre in details_data['genres']]
-                    
-                    trailer_url = get_movie_trailer(movie_id)
-                    
-                    vote_average = movie.get('vote_average', 0)
-                    if vote_average is None:
-                        vote_average = 0
-                        
-                    release_date = movie.get('release_date', '')
-                    release_year = release_date.split('-')[0] if release_date else ''
-                    
-                    print(f"✅ Filme encontrado: {movie.get('title')}")
-                    
-                    return jsonify({
-                        'success': True,
-                        'title': movie.get('title', 'Título não disponível'),
-                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path', '')}" if movie.get('backdrop_path') else '',
-                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path', '')}" if movie.get('poster_path') else '',
-                        'overview': movie.get('overview', 'Descrição não disponível'),
-                        'id': movie_id,
-                        'vote_average': round(vote_average, 1),
-                        'release_year': release_year,
-                        'genres': genres,
-                        'category': chosen_category,
-                        'trailer_url': trailer_url,
-                        'attempts': attempt + 1,
-                        'total_seen': len(seen_movies)
-                    })
-                    
-            except requests.exceptions.Timeout:
-                continue
-            except Exception as e:
-                continue
-        
-        return jsonify({
-            'success': False,
-            'error': 'Você já reagiu a todos os filmes disponíveis!',
-            'total_seen': len(seen_movies)
-        }), 404
-        
-    except Exception as e:
-        print(f"❌ ERROR crítico: {str(e)}")
-        return jsonify({'success': False, 'error': 'Erro interno do servidor'}), 500
-
-# ============================================================================
-# SISTEMA DE CONEXÃO (mantido)
-# ============================================================================
 
 @movies_bp.route('/connect', methods=['POST'])
 def connect_users():
