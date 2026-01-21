@@ -1,4 +1,4 @@
-from flask import Flask, session
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
 
@@ -28,18 +28,6 @@ def create_app():
     # Configura a chave secreta
     app.secret_key = os.getenv('SECRET_KEY', 'uma_chave_secreta_segura')
 
-    # Configura o SQLAlchemy
-    db_user = os.getenv('DB_USER')
-    db_password = os.getenv('DB_PASSWORD')
-    db_host = os.getenv('DB_HOST')
-    db_port = os.getenv('DB_PORT', 5432)
-    db_name = os.getenv('DB_NAME')
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = (
-        f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-    )
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
     # Inicializa o SQLAlchemy com a app
     db.init_app(app)
     app.extensions['db'] = db
@@ -61,6 +49,7 @@ def create_app():
         print("Blueprint 'movies' registrado")
 
     return app
+
 
 if __name__ == '__main__':
     app = create_app()
