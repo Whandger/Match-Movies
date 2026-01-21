@@ -1,14 +1,8 @@
 import os
 
 def get_database_uri():
-    # Tenta obter a URL completa primeiro
-    database_url = os.getenv('DATABASE_URL')
-    
-    if database_url:
-        return database_url
-    
-    # Fallback para SQLite se não houver DATABASE_URL
-    return 'sqlite:///matchmovies.db'
+    # O app.py vai definir isso
+    return os.getenv('DATABASE_URL', 'sqlite:///matchmovies.db')
 
 DATABASE_URI = get_database_uri()
 
@@ -19,10 +13,8 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = DATABASE_URI
 
-
 class DevelopmentConfig(Config):
     DEBUG = True
-
 
 class ProductionConfig(Config):
     DEBUG = False
