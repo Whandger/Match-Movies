@@ -4,7 +4,6 @@ import requests
 import random
 import os
 import json
-import math
 
 movies_bp = Blueprint('movies', __name__)
 
@@ -41,32 +40,6 @@ def get_movie_trailer(movie_id):
     except Exception as e:
         print(f"Erro ao buscar trailer: {e}")
         return None
-
-def weighted_movie_selection(movies):
-    """
-    Seleção ponderada de filmes baseada na nota (vote_average).
-    Filmes com notas mais altas têm maior probabilidade de serem escolhidos.
-    """
-    if not movies:
-        return None
-    
-    # Ordenar filmes por nota (decrescente)
-    sorted_movies = sorted(movies, key=lambda x: x.get('vote_average', 0), reverse=True)
-    
-    # Criar pesos baseados na posição (os primeiros têm peso maior)
-    # Usamos uma função exponencial decrescente
-    weights = []
-    for i, movie in enumerate(sorted_movies):
-        # Peso decai exponencialmente: 1, 0.8, 0.64, 0.512, ...
-        weight = math.pow(0.8, i)  # 0.8 é o fator de decaimento
-        weights.append(weight)
-    
-    # Normalizar pesos para soma = 1
-    total_weight = sum(weights)
-    normalized_weights = [w / total_weight for w in weights]
-    
-    # Escolher filme com base nos pesos
-    return random.choices(sorted_movies, weights=normalized_weights, k=1)[0]
 
 # ============================================================================
 # SISTEMA DE MATCHES SIMPLIFICADO (ATUALIZADO PARA NEON)
@@ -393,12 +366,12 @@ def get_matches():
         return jsonify({'success': False, 'error': str(e)[:100]}), 500
 
 # ============================================================================
-# SISTEMA DE FILMES (ATUALIZADO PARA PRIORIZAR NOTAS ALTAS)
+# SISTEMA DE FILMES (ATUALIZADO PARA NEON)
 # ============================================================================
 
 @movies_bp.route('/random')
 def random_movie():
-    """Busca um filme aleatório que o usuário ainda não reagiu, priorizando filmes com notas altas"""
+    """Busca um filme aleatório que o usuário ainda não reagiu"""
     try:
         # Verificar se usuário está logado
         if 'user_id' not in session:
@@ -423,44 +396,22 @@ def random_movie():
         
         print(f"🔄 DEBUG: Usuário já viu {len(seen_movies)} filmes")
         
-        # Categorias otimizadas para notas altas
-        # Usar mais "top_rated" e "popular" que geralmente têm notas melhores
+        # Categorias com limites (reduzidos para teste)
         categories = {
-            "top_rated": 800,    # Filmes melhor avaliados
-            "popular": 700,      # Filmes populares (geralmente bem avaliados)
-            "now_playing": 100,  # Filmes em cartaz
-            "upcoming": 50       # Próximos lançamentos
+            "popular": 700,
+            "top_rated": 700, 
+            "now_playing": 10,
+            "upcoming": 10
         }
         
-        # Tentar até 15 vezes buscar um filme válido E não visto
-        max_attempts = 15
+        # Tentar até 10 vezes buscar um filme válido E não visto
+        max_attempts = 10
         
         for attempt in range(max_attempts):
             try:
-                # Priorizar categorias com filmes melhor avaliados
-                # 60% chance de escolher top_rated, 30% popular, 10% outras
-                category_weights = {
-                    "top_rated": 0.6,
-                    "popular": 0.3,
-                    "now_playing": 0.05,
-                    "upcoming": 0.05
-                }
-                
-                chosen_category = random.choices(
-                    list(categories.keys()), 
-                    weights=[category_weights[cat] for cat in categories.keys()],
-                    k=1
-                )[0]
-                
+                chosen_category = random.choice(list(categories.keys()))
                 max_page = categories[chosen_category]
-                # Para top_rated, usar páginas iniciais (notas mais altas)
-                if chosen_category == "top_rated":
-                    # Páginas 1-50 têm os filmes melhor avaliados
-                    random_page = random.randint(1, min(50, max_page))
-                else:
-                    random_page = random.randint(1, max_page)
-                
-                print(f"🔄 DEBUG: Tentativa {attempt+1}: Categoria {chosen_category}, Página {random_page}")
+                random_page = random.randint(1, max_page)
                 
                 url = f"https://api.themoviedb.org/3/movie/{chosen_category}?api_key={TMDB_API_KEY}&language=pt-BR&page={random_page}"
                 response = requests.get(url, timeout=5)
@@ -472,49 +423,19 @@ def random_movie():
                 
                 if data.get('results'):
                     # Filtrar filmes válidos E não vistos
-                    valid_movies = []
-                    for movie in data['results']:
-                        # Critérios mais rigorosos para qualidade
-                        vote_average = movie.get('vote_average', 0)
-                        vote_count = movie.get('vote_count', 0)
-                        poster_path = movie.get('poster_path')
-                        overview = movie.get('overview')
-                        movie_id_str = str(movie.get('id'))
-                        
-                        # Apenas filmes com:
-                        # - Nota mínima 6.5 (aumentado de 6.0)
-                        # - Pelo menos 100 votos (para ter credibilidade)
-                        # - Poster e descrição disponíveis
-                        # - Não visto antes
-                        if (vote_average >= 6.5 and 
-                            vote_count >= 100 and 
-                            poster_path and 
-                            overview and 
-                            len(overview) > 50 and  # Descrição razoável
-                            movie_id_str not in seen_movies):
-                            
-                            # Adicionar com peso baseado na nota
-                            # Filmes com nota mais alta têm "peso" maior
-                            movie['selection_weight'] = vote_average * vote_count / 1000
-                            valid_movies.append(movie)
+                    valid_movies = [
+                        movie for movie in data['results'] 
+                        if (movie.get('vote_average', 0) >= 6.0 and 
+                            movie.get('poster_path') and
+                            movie.get('overview') and
+                            str(movie.get('id')) not in seen_movies)
+                    ]
                     
                     if not valid_movies:
                         print(f"🔄 DEBUG: Tentativa {attempt+1}: Nenhum filme válido na categoria {chosen_category}")
                         continue
                     
-                    print(f"🔄 DEBUG: Encontrados {len(valid_movies)} filmes válidos")
-                    
-                    # Ordenar por nota (decrescente) para priorizar os melhores
-                    valid_movies.sort(key=lambda x: x.get('vote_average', 0), reverse=True)
-                    
-                    # Escolher filme: 70% chance de pegar um dos 3 melhores, 30% chance aleatória
-                    if len(valid_movies) >= 3 and random.random() < 0.7:
-                        # Escolher entre os 3 melhores
-                        movie = random.choice(valid_movies[:3])
-                    else:
-                        # Seleção ponderada por nota
-                        movie = weighted_movie_selection(valid_movies)
-                    
+                    movie = random.choice(valid_movies)
                     movie_id = movie.get('id')
                     
                     # Buscar detalhes
@@ -536,17 +457,13 @@ def random_movie():
                     
                     # Tratamento de campos
                     vote_average = movie.get('vote_average', 0)
-                    vote_count = movie.get('vote_count', 0)
                     if vote_average is None:
                         vote_average = 0
                         
                     release_date = movie.get('release_date', '')
                     release_year = release_date.split('-')[0] if release_date else ''
                     
-                    # Calcular "score de qualidade" (nota ajustada pelo número de votos)
-                    quality_score = vote_average * (1 + math.log10(max(vote_count, 1)) / 10)
-                    
-                    print(f"✅ SUCCESS: Filme encontrado - {movie.get('title')} (Nota: {vote_average}, Votos: {vote_count}, Score: {quality_score:.2f})")
+                    print(f"✅ SUCCESS: Filme encontrado na tentativa {attempt+1}: {movie.get('title')}")
                     
                     return jsonify({
                         'success': True,
@@ -556,15 +473,12 @@ def random_movie():
                         'overview': movie.get('overview', 'Descrição não disponível'),
                         'id': movie_id,
                         'vote_average': round(vote_average, 1),
-                        'vote_count': vote_count,
-                        'quality_score': round(quality_score, 2),
                         'release_year': release_year,
                         'genres': genres,
                         'category': chosen_category,
                         'trailer_url': trailer_url,
                         'attempts': attempt + 1,
-                        'total_seen': len(seen_movies),
-                        'selection_strategy': 'weighted_by_rating'
+                        'total_seen': len(seen_movies)
                     })
                     
             except requests.exceptions.Timeout:
@@ -574,14 +488,12 @@ def random_movie():
                 print(f"⚠️ WARNING: Erro na tentativa {attempt+1}: {str(e)[:100]}")
                 continue
         
-        # Se chegou aqui, não encontrou filmes novos com critérios rigorosos
-        # Tentar com critérios mais relaxados
-        print(f"⚠️ WARNING: Nenhum filme novo encontrado após {max_attempts} tentativas. Relaxando critérios...")
+        # Se chegou aqui, não encontrou filmes novos
+        print(f"⚠️ WARNING: Nenhum filme novo encontrado após {max_attempts} tentativas")
         return jsonify({
             'success': False,
-            'error': 'Você já reagiu a todos os filmes disponíveis que atendem aos critérios de qualidade!',
-            'total_seen': len(seen_movies),
-            'suggestion': 'Tente conectar com mais amigos para descobrir novos filmes!'
+            'error': 'Você já reagiu a todos os filmes disponíveis!',
+            'total_seen': len(seen_movies)
         }), 404
         
     except Exception as e:
