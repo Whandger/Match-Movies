@@ -1,28 +1,14 @@
 import os
 
 def get_database_uri():
-    db_user = os.getenv('DB_USER')
-    db_password = os.getenv('DB_PASSWORD')
-    db_host = os.getenv('DB_HOST')
-    db_port = os.getenv('DB_PORT', 5432)
-    db_name = os.getenv('DB_NAME')
-
-    # Se faltar algum valor, usa SQLite local
-    if not all([db_user, db_password, db_host, db_name]):
-        return 'sqlite:///matchmovies.db'
-
-    # IMPORTANTE: Adicione um timeout e opções de SSL
-    # Isso pode resolver o problema de IPv6
-    connection_params = {
-        'connect_timeout': 10,
-        'sslmode': 'require'
-    }
+    # Tenta obter a URL completa primeiro
+    database_url = os.getenv('DATABASE_URL')
     
-    # Construa a URL com parâmetros adicionais
-    base_url = f'postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
+    if database_url:
+        return database_url
     
-    # Adicione os parâmetros de conexão
-    return f"{base_url}?{'&'.join([f'{k}={v}' for k, v in connection_params.items()])}"
+    # Fallback para SQLite se não houver DATABASE_URL
+    return 'sqlite:///matchmovies.db'
 
 DATABASE_URI = get_database_uri()
 
@@ -33,4 +19,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = DATABASE_URI
 
-# ... resto do código igual
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+
+
+class ProductionConfig(Config):
+    DEBUG = False
