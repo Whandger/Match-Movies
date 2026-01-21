@@ -3,295 +3,99 @@ from sqlalchemy import text
 import requests
 import random
 import json
-from datetime import datetime
 
 movies_bp = Blueprint('movies', __name__)
 
 TMDB_API_KEY = '941fae9e612c2f209e18d77a5a760269'
 
 # ============================================================================
-# FUNÇÃO PARA VERIFICAR TODOS OS MATCHES EXISTENTES
+# FUNÇÃO ÚNICA E SIMPLES PARA CRIAR MATCHES
 # ============================================================================
 
-def check_existing_matches_for_connection(connection_id, user1_id, user2_id):
-    """Verifica TODOS os filmes que ambos usuários já curtiram quando se conectam"""
+def create_matches_between_users(user1_id, user2_id, connection_id):
+    """Encontra TODOS os filmes que ambos usuários curtiram e cria matches"""
     try:
         db = current_app.extensions.get('db')
         if db is None:
             print("❌ ERROR: Database não encontrado")
-            return
+            return False
         
-        print(f"🔄 VERIFICANDO MATCHES EXISTENTES: conexão={connection_id}, users={user1_id} e {user2_id}")
+        print(f"🎯 CRIANDO MATCHES: user1={user1_id}, user2={user2_id}, connection={connection_id}")
         
-        # Buscar TODOS os filmes que user1 já curtiu/indicou
-        user1_movies = db.session.execute(
+        # Buscar filmes que user1 curtiu
+        user1_likes = db.session.execute(
             text("""
-                SELECT movie_id 
-                FROM "MoviesReacted" 
-                WHERE user_id = :user_id 
-                AND action IN ('like', 'indicate')
+                SELECT movie_id FROM "MoviesReacted" 
+                WHERE user_id = :user_id AND action IN ('like', 'indicate')
             """),
             {'user_id': user1_id}
         ).fetchall()
         
-        # Buscar TODOS os filmes que user2 já curtiu/indicou
-        user2_movies = db.session.execute(
+        # Buscar filmes que user2 curtiu  
+        user2_likes = db.session.execute(
             text("""
-                SELECT movie_id 
-                FROM "MoviesReacted" 
-                WHERE user_id = :user_id 
-                AND action IN ('like', 'indicate')
+                SELECT movie_id FROM "MoviesReacted" 
+                WHERE user_id = :user_id AND action IN ('like', 'indicate')
             """),
             {'user_id': user2_id}
         ).fetchall()
         
-        # Converter para conjuntos para facilitar comparação
-        user1_movie_set = {str(row[0]) for row in user1_movies}
-        user2_movie_set = {str(row[0]) for row in user2_movies}
+        # Converter para conjuntos de strings
+        user1_movies = {str(row[0]) for row in user1_likes}
+        user2_movies = {str(row[0]) for row in user2_likes}
+        
+        print(f"📊 User {user1_id} curtiu {len(user1_movies)} filmes")
+        print(f"📊 User {user2_id} curtiu {len(user2_movies)} filmes")
         
         # Encontrar filmes em comum
-        common_movies = user1_movie_set.intersection(user2_movie_set)
+        common_movies = user1_movies.intersection(user2_movies)
         
-        print(f"📊 Filmes em comum encontrados: {len(common_movies)}")
+        print(f"🎬 Filmes em comum encontrados: {len(common_movies)}")
         
-        if common_movies:
-            # Buscar matches atuais
-            current_matches = db.session.execute(
-                text('SELECT matched_movies FROM "UserConnections" WHERE id = :connection_id'),
-                {'connection_id': connection_id}
-            ).scalar()
-            
-            # Converter para lista Python
-            if current_matches is None:
-                matches_list = []
-            elif isinstance(current_matches, str):
-                matches_list = json.loads(current_matches)
-            else:
-                matches_list = current_matches
-            
-            # Converter strings para inteiros (para manter consistência)
-            existing_matches = {int(m) if isinstance(m, str) else m for m in matches_list}
-            
-            # Adicionar novos matches
-            new_matches_count = 0
-            for movie_id_str in common_movies:
-                movie_id = int(movie_id_str)
-                if movie_id not in existing_matches:
-                    matches_list.append(movie_id)
-                    new_matches_count += 1
-            
-            if new_matches_count > 0:
-                # Atualizar a conexão
-                db.session.execute(
-                    text("""
-                        UPDATE "UserConnections" 
-                        SET match_count = :match_count,
-                            last_match_at = CURRENT_TIMESTAMP,
-                            matched_movies = :matched_movies
-                        WHERE id = :connection_id
-                    """),
-                    {
-                        'match_count': len(matches_list),
-                        'matched_movies': json.dumps(matches_list),
-                        'connection_id': connection_id
-                    }
-                )
-                
-                db.session.commit()
-                print(f"✅ {new_matches_count} NOVOS MATCHES ENCONTRADOS ao conectar usuários!")
-            else:
-                print(f"📭 Nenhum novo match encontrado (todos já registrados)")
-        else:
-            print(f"📭 Nenhum filme em comum encontrado")
+        if not common_movies:
+            print("📭 Nenhum filme em comum")
+            return False
         
-    except Exception as e:
-        print(f"❌ ERROR ao verificar matches existentes: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        if 'db' in locals():
-            db.session.rollback()
-
-# ============================================================================
-# SISTEMA DE MATCHES - VERSÃO FINAL CORRIGIDA
-# ============================================================================
-
-def check_and_create_matches(user_id, movie_id, action):
-    """Verifica e cria matches quando dois usuários reagem ao mesmo filme"""
-    try:
-        # Só verifica matches para likes e indicações
-        if action not in ['like', 'indicate']:
-            return
+        # Converter para lista de inteiros
+        matches_list = [int(movie_id) for movie_id in common_movies]
         
-        db = current_app.extensions.get('db')
-        if db is None:
-            print("❌ ERROR: Database não encontrado")
-            return
+        print(f"✅ Criando {len(matches_list)} matches: {matches_list}")
         
-        print(f"🔄 CHECK MATCHES: user={user_id}, movie={movie_id}, action={action}")
-        
-        # Buscar todas as conexões ativas do usuário
-        connections = db.session.execute(
-            text("""
-                SELECT id, user1_id, user2_id 
-                FROM "UserConnections" 
-                WHERE (user1_id = :user_id OR user2_id = :user_id) 
-                AND is_active = TRUE
-            """),
-            {'user_id': user_id}
-        ).fetchall()
-        
-        print(f"📊 Conexões encontradas: {len(connections)}")
-        
-        for connection in connections:
-            connection_id = connection[0]
-            user1_id = connection[1]
-            user2_id = connection[2]
-            
-            # Determinar quem é o parceiro
-            partner_id = user2_id if user1_id == user_id else user1_id
-            
-            print(f"🔍 Verificando conexão {connection_id} com parceiro {partner_id}")
-            
-            # ⚠️ CORREÇÃO: Converter movie_id para string para comparar com VARCHAR
-            movie_id_str = str(movie_id)
-            
-            # Verificar se o parceiro também curtiu/indicou este filme
-            partner_reaction = db.session.execute(
-                text("""
-                    SELECT COUNT(*) 
-                    FROM "MoviesReacted" 
-                    WHERE user_id = :partner_id 
-                    AND movie_id = :movie_id 
-                    AND action IN ('like', 'indicate')
-                """),
-                {'partner_id': partner_id, 'movie_id': movie_id_str}  # Usar movie_id_str
-            ).scalar()
-            
-            print(f"📌 Parceiro {partner_id} reagiu ao filme {movie_id_str}? {partner_reaction > 0}")
-            
-            if partner_reaction > 0:
-                print(f"🎉 MATCH ENCONTRADO! Usuários {user_id} e {partner_id} curtiram o filme {movie_id}")
-                
-                # Buscar os matches atuais
-                current_matches = db.session.execute(
-                    text("""
-                        SELECT matched_movies 
-                        FROM "UserConnections" 
-                        WHERE id = :connection_id
-                    """),
-                    {'connection_id': connection_id}
-                ).scalar()
-                
-                # Converter para lista Python (JSONB pode vir como lista ou string)
-                if current_matches is None:
-                    matches_list = []
-                elif isinstance(current_matches, str):
-                    matches_list = json.loads(current_matches)
-                else:
-                    matches_list = current_matches
-                
-                print(f"📋 Matches atuais: {matches_list}")
-                
-                # Verificar se este filme já está na lista de matches
-                if movie_id not in matches_list:
-                    matches_list.append(movie_id)
-                    
-                    # Atualizar a conexão com o novo match
-                    db.session.execute(
-                        text("""
-                            UPDATE "UserConnections" 
-                            SET match_count = match_count + 1,
-                                last_match_at = CURRENT_TIMESTAMP,
-                                matched_movies = :matched_movies
-                            WHERE id = :connection_id
-                        """),
-                        {
-                            'matched_movies': json.dumps(matches_list),
-                            'connection_id': connection_id
-                        }
-                    )
-                    
-                    print(f"✅ NOVO MATCH REGISTRADO: Conexão {connection_id}, Filme {movie_id}")
-        
-        db.session.commit()
-        
-    except Exception as e:
-        print(f"❌ ERROR ao verificar matches: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        if 'db' in locals():
-            db.session.rollback()
-
-# ============================================================================
-# ROTA PARA REGISTRAR AÇÃO - CORRIGIDA
-# ============================================================================
-
-@movies_bp.route('/action', methods=['POST'])
-def register_action():
-    """Registra a ação do usuário no banco de dados E verifica matches"""
-    try:
-        # Verificar se usuário está logado
-        if 'user_id' not in session:
-            return jsonify({'error': 'Usuário não logado'}), 401
-        
-        data = request.get_json()
-        movie_id = data.get('movie_id')
-        action = data.get('action')
-        user_id = session['user_id']
-        
-        if not movie_id or not action:
-            return jsonify({'success': False, 'error': 'Dados incompletos'}), 400
-        
-        print(f"🎬 REGISTER ACTION: user={user_id}, movie={movie_id}, action={action}")
-        
-        # Acessar Database
-        db = current_app.extensions.get('db')
-        if db is None:
-            return jsonify({'error': 'Database não configurado'}), 500
-        
-        # ⚠️ CORREÇÃO: Converter movie_id para string para armazenar como VARCHAR
-        movie_id_str = str(movie_id)
-        
-        # Inserir ou atualizar a reação
+        # Atualizar a conexão com todos os matches
         db.session.execute(
             text("""
-                INSERT INTO "MoviesReacted" (user_id, movie_id, action, reacted_at) 
-                VALUES (:user_id, :movie_id, :action, CURRENT_TIMESTAMP)
-                ON CONFLICT (user_id, movie_id) 
-                DO UPDATE SET action = EXCLUDED.action, reacted_at = CURRENT_TIMESTAMP
+                UPDATE "UserConnections" 
+                SET match_count = :match_count,
+                    last_match_at = CURRENT_TIMESTAMP,
+                    matched_movies = :matched_movies
+                WHERE id = :connection_id
             """),
-            {'user_id': user_id, 'movie_id': movie_id_str, 'action': action}  # Usar movie_id_str
+            {
+                'match_count': len(matches_list),
+                'matched_movies': json.dumps(matches_list),
+                'connection_id': connection_id
+            }
         )
         
         db.session.commit()
-        
-        # 🎯 CHECAR MATCHES APÓS REGISTRAR AÇÃO
-        if action in ['like', 'indicate']:
-            print(f"🔄 Verificando matches para ação {action}...")
-            check_and_create_matches(user_id, movie_id, action)
-        
-        return jsonify({
-            'success': True,
-            'action': action, 
-            'movie_id': movie_id,
-            'message': f'Ação {action} registrada com sucesso'
-        })
+        print(f"🎉 {len(matches_list)} MATCHES CRIADOS com sucesso!")
+        return True
         
     except Exception as e:
-        print(f"❌ ERROR na rota /action: {str(e)}")
+        print(f"❌ ERROR ao criar matches: {str(e)}")
         import traceback
         traceback.print_exc()
         if 'db' in locals():
             db.session.rollback()
-        return jsonify({'success': False, 'error': str(e)[:100]}), 500
+        return False
 
 # ============================================================================
-# ROTA DE CONEXÃO - ATUALIZADA PARA VERIFICAR MATCHES EXISTENTES
+# ROTA DE CONEXÃO - SIMPLIFICADA
 # ============================================================================
 
 @movies_bp.route('/connect', methods=['POST'])
 def connect_users():
-    """Conecta dois usuários"""
+    """Conecta dois usuários e cria matches imediatamente"""
     try:
         print("🔗 /connect rota chamada")
         
@@ -329,6 +133,7 @@ def connect_users():
         
         print(f"✅ Usuário alvo encontrado: {target_user[1]}")
         
+        # Verificar se já existe conexão
         existing_connection = db.session.execute(
             text("""
                 SELECT id FROM "UserConnections" 
@@ -346,7 +151,7 @@ def connect_users():
         
         print(f"🔗 Criando conexão entre {user1_id} e {user2_id}")
         
-        # Criar nova conexão
+        # Criar conexão
         db.session.execute(
             text("""
                 INSERT INTO "UserConnections" (user1_id, user2_id, match_count, matched_movies, is_active) 
@@ -356,7 +161,7 @@ def connect_users():
             {'user1_id': user1_id, 'user2_id': user2_id}
         )
         
-        # Buscar o ID da conexão recém-criada
+        # Buscar ID da conexão
         connection_result = db.session.execute(
             text('SELECT id FROM "UserConnections" WHERE user1_id = :user1_id AND user2_id = :user2_id'),
             {'user1_id': user1_id, 'user2_id': user2_id}
@@ -366,11 +171,10 @@ def connect_users():
         
         db.session.commit()
         
-        print(f"✅ Conexão criada entre {current_user_id} e {target_user_id} (ID: {connection_id})")
+        print(f"✅ Conexão criada (ID: {connection_id})")
         
-        # 🎯 CHECAR MATCHES EXISTENTES APÓS CRIAR CONEXÃO
-        print(f"🔄 Verificando matches existentes entre {user1_id} e {user2_id}...")
-        check_existing_matches_for_connection(connection_id, user1_id, user2_id)
+        # 🎯 CRIAR MATCHES IMEDIATAMENTE
+        create_matches_between_users(user1_id, user2_id, connection_id)
         
         return jsonify({
             'success': True, 
@@ -389,12 +193,12 @@ def connect_users():
         return jsonify({'success': False, 'message': f'Erro interno do servidor: {str(e)[:100]}'}), 500
 
 # ============================================================================
-# ROTA PARA VERIFICAR MATCHES DE UMA CONEXÃO ESPECÍFICA (nova rota)
+# ROTA PARA VERIFICAR/ATUALIZAR MATCHES
 # ============================================================================
 
-@movies_bp.route('/check_connection_matches/<int:connection_id>')
-def check_connection_matches(connection_id):
-    """Força a verificação de todos os matches para uma conexão específica"""
+@movies_bp.route('/update_matches/<int:connection_id>', methods=['POST'])
+def update_matches(connection_id):
+    """Atualiza os matches para uma conexão específica"""
     try:
         if 'user_id' not in session:
             return jsonify({'error': 'Usuário não logado'}), 401
@@ -405,48 +209,65 @@ def check_connection_matches(connection_id):
         if db is None:
             return jsonify({'error': 'Database não configurado'}), 500
         
-        # Verificar se o usuário tem acesso a esta conexão
+        # Verificar se a conexão pertence ao usuário
         connection = db.session.execute(
             text("""
-                SELECT user1_id, user2_id 
-                FROM "UserConnections" 
-                WHERE id = :connection_id 
-                AND (user1_id = :user_id OR user2_id = :user_id)
-                AND is_active = TRUE
+                SELECT user1_id, user2_id FROM "UserConnections" 
+                WHERE id = :connection_id AND is_active = TRUE
             """),
-            {'connection_id': connection_id, 'user_id': user_id}
+            {'connection_id': connection_id}
         ).fetchone()
         
         if not connection:
-            return jsonify({'success': False, 'error': 'Conexão não encontrada ou não autorizada'}), 404
+            return jsonify({'success': False, 'error': 'Conexão não encontrada'}), 404
         
         user1_id = connection[0]
         user2_id = connection[1]
         
-        print(f"🔍 Verificando matches para conexão {connection_id} entre {user1_id} e {user2_id}")
+        # Verificar se o usuário tem acesso
+        if user_id not in [user1_id, user2_id]:
+            return jsonify({'success': False, 'error': 'Não autorizado'}), 403
         
-        # Verificar matches existentes
-        check_existing_matches_for_connection(connection_id, user1_id, user2_id)
+        print(f"🔄 Atualizando matches para conexão {connection_id}")
         
-        # Buscar informações atualizadas
-        updated_connection = db.session.execute(
-            text('SELECT match_count FROM "UserConnections" WHERE id = :connection_id'),
+        # Buscar matches atuais
+        current_matches = db.session.execute(
+            text('SELECT matched_movies FROM "UserConnections" WHERE id = :connection_id'),
             {'connection_id': connection_id}
-        ).fetchone()
+        ).scalar()
         
-        return jsonify({
-            'success': True,
-            'message': f'Verificação de matches concluída. Total: {updated_connection[0]} matches',
-            'match_count': updated_connection[0],
-            'connection_id': connection_id
-        })
+        # Limpar matches antigos
+        db.session.execute(
+            text("""
+                UPDATE "UserConnections" 
+                SET match_count = 0, matched_movies = '[]'
+                WHERE id = :connection_id
+            """),
+            {'connection_id': connection_id}
+        )
+        
+        db.session.commit()
+        
+        # Recriar todos os matches
+        success = create_matches_between_users(user1_id, user2_id, connection_id)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Matches atualizados com sucesso'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Nenhum match encontrado'
+            })
         
     except Exception as e:
-        print(f"❌ ERROR ao verificar matches da conexão: {str(e)}")
+        print(f"❌ ERROR ao atualizar matches: {str(e)}")
         return jsonify({'success': False, 'error': str(e)[:100]}), 500
 
 # ============================================================================
-# OUTRAS ROTAS (mantidas iguais)
+# ROTA PARA MATCHES (SIMPLIFICADA)
 # ============================================================================
 
 @movies_bp.route('/matches')
@@ -462,7 +283,7 @@ def get_matches():
         if db is None:
             return jsonify({'error': 'Database não configurado'}), 500
         
-        print(f"🔍 BUSCANDO MATCHES para user_id={user_id}")
+        print(f"🔍 Buscando matches para user_id={user_id}")
         
         # Buscar conexões com matches
         connections_data = db.session.execute(
@@ -490,7 +311,6 @@ def get_matches():
             {'user_id': user_id}
         ).fetchall()
         
-        # Processar os dados para o frontend
         all_matches = []
         
         for row in connections_data:
@@ -509,9 +329,8 @@ def get_matches():
             else:
                 movies_list = matched_movies
             
-            print(f"📋 Conexão {connection_id} tem {len(movies_list)} matches: {movies_list}")
+            print(f"📋 Conexão {connection_id} tem {len(movies_list)} matches")
             
-            # Adicionar cada filme como um match separado
             for movie_id in movies_list:
                 all_matches.append({
                     'connection_id': connection_id,
@@ -522,7 +341,7 @@ def get_matches():
                     'last_match_at': last_match_at.isoformat() if last_match_at else None
                 })
         
-        print(f"✅ Total de matches encontrados: {len(all_matches)}")
+        print(f"✅ Total de matches: {len(all_matches)}")
         
         return jsonify({
             'success': True,
@@ -532,9 +351,141 @@ def get_matches():
         
     except Exception as e:
         print(f"❌ ERROR ao buscar matches: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)[:100]}), 500
+
+# ============================================================================
+# ROTA PARA REGISTRAR AÇÃO (SIMPLIFICADA)
+# ============================================================================
+
+@movies_bp.route('/action', methods=['POST'])
+def register_action():
+    """Registra a ação do usuário no banco de dados"""
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'Usuário não logado'}), 401
+        
+        data = request.get_json()
+        movie_id = data.get('movie_id')
+        action = data.get('action')
+        user_id = session['user_id']
+        
+        if not movie_id or not action:
+            return jsonify({'success': False, 'error': 'Dados incompletos'}), 400
+        
+        print(f"🎬 REGISTER ACTION: user={user_id}, movie={movie_id}, action={action}")
+        
+        db = current_app.extensions.get('db')
+        if db is None:
+            return jsonify({'error': 'Database não configurado'}), 500
+        
+        # Converter para string
+        movie_id_str = str(movie_id)
+        
+        # Inserir ou atualizar reação
+        db.session.execute(
+            text("""
+                INSERT INTO "MoviesReacted" (user_id, movie_id, action, reacted_at) 
+                VALUES (:user_id, :movie_id, :action, CURRENT_TIMESTAMP)
+                ON CONFLICT (user_id, movie_id) 
+                DO UPDATE SET action = EXCLUDED.action, reacted_at = CURRENT_TIMESTAMP
+            """),
+            {'user_id': user_id, 'movie_id': movie_id_str, 'action': action}
+        )
+        
+        db.session.commit()
+        
+        # Se foi like ou indicate, verificar se há novas matches
+        if action in ['like', 'indicate']:
+            print(f"🔄 Verificando novas matches para filme {movie_id}")
+            
+            # Buscar todas as conexões do usuário
+            connections = db.session.execute(
+                text("""
+                    SELECT id, user1_id, user2_id 
+                    FROM "UserConnections" 
+                    WHERE (user1_id = :user_id OR user2_id = :user_id) 
+                    AND is_active = TRUE
+                """),
+                {'user_id': user_id}
+            ).fetchall()
+            
+            for connection in connections:
+                connection_id = connection[0]
+                user1_id = connection[1]
+                user2_id = connection[2]
+                
+                # Verificar se o parceiro também curtiu este filme
+                partner_id = user2_id if user1_id == user_id else user1_id
+                
+                partner_reaction = db.session.execute(
+                    text("""
+                        SELECT COUNT(*) 
+                        FROM "MoviesReacted" 
+                        WHERE user_id = :partner_id 
+                        AND movie_id = :movie_id 
+                        AND action IN ('like', 'indicate')
+                    """),
+                    {'partner_id': partner_id, 'movie_id': movie_id_str}
+                ).scalar()
+                
+                if partner_reaction > 0:
+                    print(f"🎉 Novo match encontrado! Adicionando filme {movie_id} à conexão {connection_id}")
+                    
+                    # Buscar matches atuais
+                    current_matches = db.session.execute(
+                        text('SELECT matched_movies FROM "UserConnections" WHERE id = :connection_id'),
+                        {'connection_id': connection_id}
+                    ).scalar()
+                    
+                    # Converter para lista
+                    if current_matches is None:
+                        matches_list = []
+                    elif isinstance(current_matches, str):
+                        matches_list = json.loads(current_matches)
+                    else:
+                        matches_list = current_matches
+                    
+                    # Adicionar se não existir
+                    if movie_id not in matches_list:
+                        matches_list.append(movie_id)
+                        
+                        # Atualizar conexão
+                        db.session.execute(
+                            text("""
+                                UPDATE "UserConnections" 
+                                SET match_count = :match_count,
+                                    last_match_at = CURRENT_TIMESTAMP,
+                                    matched_movies = :matched_movies
+                                WHERE id = :connection_id
+                            """),
+                            {
+                                'match_count': len(matches_list),
+                                'matched_movies': json.dumps(matches_list),
+                                'connection_id': connection_id
+                            }
+                        )
+                        
+                        db.session.commit()
+                        print(f"✅ Match adicionado!")
+        
+        return jsonify({
+            'success': True,
+            'action': action, 
+            'movie_id': movie_id,
+            'message': f'Ação {action} registrada com sucesso'
+        })
+        
+    except Exception as e:
+        print(f"❌ ERROR na rota /action: {str(e)}")
         import traceback
         traceback.print_exc()
+        if 'db' in locals():
+            db.session.rollback()
         return jsonify({'success': False, 'error': str(e)[:100]}), 500
+
+# ============================================================================
+# ROTAS RESTANTES (mantidas iguais)
+# ============================================================================
 
 @movies_bp.route('/random')
 def random_movie():
@@ -551,18 +502,15 @@ def random_movie():
         
         print(f"🎲 Buscando filme aleatório para user_id={user_id}")
         
-        # Buscar filmes que o usuário já reagiu
         seen_movies_result = db.session.execute(
             text('SELECT movie_id FROM "MoviesReacted" WHERE user_id = :user_id'),
             {'user_id': user_id}
         ).fetchall()
         
-        # ⚠️ CORREÇÃO: Converter para string para comparar corretamente
         seen_movies = [str(row[0]) for row in seen_movies_result]
         
         print(f"📊 Usuário já viu {len(seen_movies)} filmes")
         
-        # Categorias
         categories = {
             "popular": 700,
             "top_rated": 700, 
@@ -675,7 +623,6 @@ def random_movie():
 def get_movie_details(movie_id):
     """Retorna detalhes de um filme específico"""
     try:
-        # Buscar detalhes do TMDB
         url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={TMDB_API_KEY}&language=pt-BR"
         response = requests.get(url, timeout=5)
         
@@ -684,7 +631,6 @@ def get_movie_details(movie_id):
         
         movie_data = response.json()
         
-        # Buscar trailer
         trailer_url = None
         videos_url = f"https://api.themoviedb.org/3/movie/{movie_id}/videos"
         videos_response = requests.get(
