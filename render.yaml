@@ -3,10 +3,10 @@ services:
     name: matchmovies
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app
+    startCommand: gunicorn "server.app:create_app()"
     envVars:
       - key: DATABASE_URL
-        sync: false
+        value: postgresql+psycopg://postgres:yYJDEM5ENvCMti3q@db.kwuxogvfhfgryiquhshl.supabase.co:5432/postgres?sslmode=require
       - key: SECRET_KEY
         generateValue: true
       - key: FLASK_ENV
