@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
-from sqlalchemy import create_engine, URL
+from sqlalchemy import create_engine, text
 from server.config.config import ProductionConfig, DevelopmentConfig
 
 # Instância global do SQLAlchemy
@@ -25,50 +25,81 @@ def create_app():
     else:
         app.config.from_object(DevelopmentConfig)
 
-    # LOG TEMPORÁRIO para debug
-    print(f"DEBUG - Database URL from env: {os.getenv('DATABASE_URL', 'NOT SET')}")
-    print(f"DEBUG - Database URL from config: {app.config['SQLALCHEMY_DATABASE_URI']}")
+    print(f"DEBUG: Ambiente: {env}")
     
-    # **FORÇAR CONEXÃO SUPABASE SEMPRE EM PRODUÇÃO**
+    # **CONEXÃO SUPABASE EM PRODUÇÃO - TESTE MULTIPLAS URLs**
     if env == 'production':
-        print("DEBUG: Produção detectada - configurando Supabase manualmente...")
+        print("DEBUG: Configurando Supabase...")
         
-        # Configuração MANUAL do Supabase
-        connection_url = URL.create(
-            drivername="postgresql+psycopg",
-            username="postgres.kwuxogvfhfgryiquhshl",  # USUÁRIO COM PROJECT-REF
-            password="Itc3dku5uVIAXFgC",  # SENHA
-            host="aws-1-sa-east-1.pooler.supabase.com",
-            port=5432,
-            database="postgres",
-            query={
-                "sslmode": "require",
-                "connect_timeout": "10",
-                "keepalives_idle": "30",
-                "keepalives_interval": "10",
-                "keepalives_count": "5"
-            }
-        )
+        password = "Bh54YB7vBK5RvChG"  # SENHA NOVA DO SUPABASE
         
-        # Cria engine manualmente
-        engine = create_engine(
-            connection_url,
-            pool_pre_ping=True,
-            echo=False,
-            pool_size=5,
-            max_overflow=10
-        )
+        # LISTA DE URLs PARA TESTAR (em ordem de probabilidade)
+        test_urls = [
+            # 1. URL EXATA do Supabase Session Pooler (mais provável)
+            f"postgresql://postgres.kwuxogvfhfgryiquhshl:{password}@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require&connect_timeout=10",
+            
+            # 2. Com psycopg3 driver
+            f"postgresql+psycopg://postgres.kwuxogvfhfgryiquhshl:{password}@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require&connect_timeout=10",
+            
+            # 3. Usuário escapado
+            f"postgresql+psycopg://postgres%2Ekwuxogvfhfgryiquhshl:{password}@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require&connect_timeout=10",
+            
+            # 4. Transaction Pooler (porta 6543)
+            f"postgresql+psycopg://postgres.kwuxogvfhfgryiquhshl:{password}@aws-0-sa-east-1.pooler.supabase.com:6543/postgres?sslmode=require&connect_timeout=10",
+            
+            # 5. Conexão direta (talvez com IPv4 add-on?)
+            f"postgresql+psycopg://postgres:{password}@db.kwuxogvfhfgryiquhshl.supabase.co:5432/postgres?sslmode=require&connect_timeout=10",
+        ]
         
-        # Configura o SQLAlchemy
-        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-            'pool_pre_ping': True,
-            'pool_recycle': 300,
-        }
+        success = False
+        chosen_url = ""
         
-        # Sobrescreve a URL no config
-        app.config['SQLALCHEMY_DATABASE_URI'] = str(connection_url)
+        # Testa cada URL
+        for i, connection_string in enumerate(test_urls, 1):
+            print(f"\nDEBUG: Testando URL {i}/5...")
+            safe_string = connection_string.replace(password, "***")
+            print(f"URL: {safe_string}")
+            
+            try:
+                engine = create_engine(
+                    connection_string,
+                    pool_pre_ping=True,
+                    echo=False,
+                    connect_args={"connect_timeout": 5}
+                )
+                
+                # Tenta conectar
+                with engine.connect() as conn:
+                    # Tenta uma query simples
+                    result = conn.execute(text("SELECT 1"))
+                    if result.scalar() == 1:
+                        print(f"✅ CONEXÃO {i} BEM-SUCEDIDA!")
+                        app.config['SQLALCHEMY_DATABASE_URI'] = connection_string
+                        chosen_url = safe_string
+                        success = True
+                        
+                        # Cria as tabelas se não existirem
+                        try:
+                            print("DEBUG: Verificando tabelas...")
+                            # Aqui você pode adicionar db.create_all() se necessário
+                        except Exception as e:
+                            print(f"DEBUG: Nota sobre tabelas: {str(e)[:100]}")
+                        
+                        break
+                        
+            except Exception as e:
+                error_msg = str(e)
+                print(f"❌ Conexão {i} falhou: {error_msg[:150]}")
+                continue
         
-        print(f"DEBUG: Supabase URL configurada: {str(connection_url).replace('Itc3dku5uVIAXFgC', '***')}")
+        if not success:
+            print("\n⚠️ TODAS as conexões falharam. Usando SQLite como fallback.")
+            print("DEBUG: Considere ativar IPv4 add-on no Supabase (US$4/mês)")
+            app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///matchmovies.db'
+        else:
+            print(f"\n🎉 Conexão estabelecida com: {chosen_url}")
+    
+    print(f"DEBUG: URL final: {app.config.get('SQLALCHEMY_DATABASE_URI', 'Não definida').replace(password, '***') if 'password' in locals() else app.config.get('SQLALCHEMY_DATABASE_URI', 'Não definida')}")
     
     # Inicializa o SQLAlchemy
     db.init_app(app)
