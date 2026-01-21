@@ -26,15 +26,14 @@ def create_app():
         app.config.from_object(DevelopmentConfig)
 
     # LOG TEMPORÁRIO para debug
-    print(f"DEBUG - Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+    print(f"DEBUG - Database URL from env: {os.getenv('DATABASE_URL', 'NOT SET')}")
+    print(f"DEBUG - Database URL from config: {app.config['SQLALCHEMY_DATABASE_URI']}")
     
-    # **SOLUÇÃO: Criar engine manualmente para Supabase**
-    db_url = app.config['SQLALCHEMY_DATABASE_URI']
-    
-    if 'supabase' in db_url or 'pooler.supabase.com' in db_url:
-        print("DEBUG: Usando configuração manual para Supabase...")
+    # **FORÇAR CONEXÃO SUPABASE SEMPRE EM PRODUÇÃO**
+    if env == 'production':
+        print("DEBUG: Produção detectada - configurando Supabase manualmente...")
         
-        # Cria URL de conexão com todos os parâmetros corretos
+        # Configuração MANUAL do Supabase
         connection_url = URL.create(
             drivername="postgresql+psycopg",
             username="postgres.kwuxogvfhfgryiquhshl",  # USUÁRIO COM PROJECT-REF
@@ -55,31 +54,24 @@ def create_app():
         engine = create_engine(
             connection_url,
             pool_pre_ping=True,
-            echo=False  # Mude para True para ver queries SQL no log
+            echo=False,
+            pool_size=5,
+            max_overflow=10
         )
         
-        # Configura o SQLAlchemy com o engine manual
+        # Configura o SQLAlchemy
         app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
             'pool_pre_ping': True,
             'pool_recycle': 300,
         }
         
-        # Inicializa o SQLAlchemy
-        db.init_app(app)
+        # Sobrescreve a URL no config
+        app.config['SQLALCHEMY_DATABASE_URI'] = str(connection_url)
         
-        # Sobrescreve o engine com o nosso engine configurado corretamente
-        with app.app_context():
-            db.engine = engine
-            # Atualiza a sessão para usar o novo engine
-            db.session.remove()
-            db.session = db.create_scoped_session(options={'bind': engine})
-            
-        print("DEBUG: Engine Supabase configurado manualmente")
-    else:
-        # Para SQLite ou outras conexões, usa configuração normal
-        db.init_app(app)
-        print("DEBUG: Usando configuração padrão do SQLAlchemy")
+        print(f"DEBUG: Supabase URL configurada: {str(connection_url).replace('Itc3dku5uVIAXFgC', '***')}")
     
+    # Inicializa o SQLAlchemy
+    db.init_app(app)
     app.extensions['db'] = db
 
     # Registrar blueprints
