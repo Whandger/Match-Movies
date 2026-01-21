@@ -6,8 +6,8 @@ services:
     startCommand: gunicorn "server.app:create_app()"
     envVars:
       - key: DATABASE_URL
-        value: postgresql+psycopg://postgres:SUA_NOVA_SENHA_AQUI@db.kwuxogvfhfgryiquhshl.supabase.co:5432/postgres?sslmode=require
+        value: postgresql+psycopg://postgres.kwuxogvfhfgryiquhshl:NOVA_SENHA_AQUI@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require&connect_timeout=10
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY
-        generateValue: true
+        value: 78a98436c665ee66ba284c92a7e47422bc340c0e52fb8fb1
