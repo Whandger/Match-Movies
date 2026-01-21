@@ -1,68 +1,33 @@
-from flask import Flask, session
-from flask_sqlalchemy import SQLAlchemy
 import os
 
-# Instância global do SQLAlchemy
-db = SQLAlchemy()
-
-def create_app():
-    print("Criando app e registrando blueprints...")
-
-    app = Flask(
-        __name__,
-        template_folder=os.path.join(os.path.dirname(__file__), '..', 'template'),
-        static_folder=os.path.join(os.path.dirname(__file__), '..', 'static')
-    )
-
-    # Verifica o ambiente (development ou production)
-    env = os.getenv('FLASK_ENV', 'production')
-
-    # Configurações de produção ou desenvolvimento
-    if env == 'production':
-        from server.config.config import ProductionConfig
-        app.config.from_object(ProductionConfig)
-    else:
-        from server.config.config import DevelopmentConfig
-        app.config.from_object(DevelopmentConfig)
-
-    # Configura a chave secreta
-    app.secret_key = os.getenv('SECRET_KEY', 'uma_chave_secreta_segura')
-
-    # Configura o SQLAlchemy
+def get_database_uri():
     db_user = os.getenv('DB_USER')
     db_password = os.getenv('DB_PASSWORD')
     db_host = os.getenv('DB_HOST')
     db_port = os.getenv('DB_PORT', 5432)
     db_name = os.getenv('DB_NAME')
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = (
-        f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-    )
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # Se faltar algum valor, usa SQLite local
+    if not all([db_user, db_password, db_host, db_name]):
+        return 'sqlite:///matchmovies.db'
 
-    # Inicializa o SQLAlchemy com a app
-    db.init_app(app)
-    app.extensions['db'] = db
+    # Postgres com psycopg3 e SSL
+    return f'postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}?sslmode=require'
 
-    # Registrar blueprints
-    print(app.url_map)
-    if 'page' not in app.blueprints:
-        from server.routes.routes import page_bp
-        app.register_blueprint(page_bp)
-        print(app.url_map)
+DATABASE_URI = get_database_uri()
 
-    if 'login' not in app.blueprints:
-        from server.routes.loginroutes import login_bp
-        app.register_blueprint(login_bp)
 
-    if 'movies' not in app.blueprints:
-        from server.routes.movies import movies_bp
-        app.register_blueprint(movies_bp, url_prefix='/api/movies')
-        print("Blueprint 'movies' registrado")
+class Config:
+    SECRET_KEY = os.getenv('SECRET_KEY', 'chave_padrao')
+    DEBUG = False
+    TESTING = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = DATABASE_URI
 
-    return app
 
-if __name__ == '__main__':
-    app = create_app()
-    debug_mode = os.getenv('FLASK_ENV', 'production') != 'production'
-    app.run(debug=debug_mode, use_reloader=False)
+class DevelopmentConfig(Config):
+    DEBUG = True
+
+
+class ProductionConfig(Config):
+    DEBUG = False
