@@ -52,7 +52,7 @@ def create_app():
     # Inicializa o SQLAlchemy
     db.init_app(app)
     
-    # **NÃO cria tabelas automaticamente (já criamos via SQL)**
+    # **REMOVI o db.create_all()** - tabelas já criadas via SQL
     print("✅ Tabelas já criadas manualmente via SQL")
     
     # Registrar blueprints
