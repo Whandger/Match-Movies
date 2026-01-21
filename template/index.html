@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+    <html lang="pt-br">
+
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <title>MatchMovies</title>
+        <link rel="icon" href="" id="favicon">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/DropDownUser.css') }}">
+      </head>
+
+      <body>
+        <header>
+          <div class="title">
+            <h1>MatchMovies</h1>
+          </div>
+          <!-- Modal para o menu de conexão -->
+          <div class="connect"> 
+            <a href="#" id="connect">Connect with +</a>
+              <div id="connectModal" style="display: none;">
+                <input id="connectInput" type="id" placeholder="Id de usuario">
+                <button id="connectButton" class="button" type="submit">Connect</button>
+            </div>
+          </div>
+
+          <!-- Dropdown para Usuario | ID | FORGOT PASSWORD | LOGOUT -->
+          <div class="user">
+            <div class="navbar1">
+                <div class="dropdown1">
+                    <button class="dropbtn1" id="username">
+                        <b>{{ session.get('username') }}</b>
+                          
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-content1" style="right:0">
+                        <b>Id: {{ session.get('user_id') }}</b>
+                        <a href="#">Change Password</a>
+                        <a href="{{ url_for('login.logout') }}" id="logoutbtn">Logout</a>
+                    </div> 
+                </div>
+            </div>
+        </div>
+
+        </header>
+        <!-- Carta de filmes -->
+        <main>
+          <section class="card-container"> 
+            <div class="cardInner">
+
+              <!-- Parte da frente da carta -->
+              <div class="cardFront"> 
+                <div class="moviePic">
+                </div>
+                <div class="infoCard"></div>
+
+                <div class="reaction">
+                  <a href="#" id="like" type="button"></a>
+                  <a href="#" id="indicate" type="button"></a>
+                  <a href="#" id="dislike" type="button"></a>
+                </div></div>
+
+              <!-- Parte de tras da carta -->
+              <div class="cardBack"> 
+                <div class="titleMovie">
+                  <p id="titleName">Movie title</p>
+                </div>
+                <div class="genre">
+                  <p id="genre">Genres</p>
+                </div>
+                <div class="trailer">
+                  <button href="#" id="trailer">Trailer</button>
+                </div>
+                <div class="desc">
+                  <p id="description">description</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div id="history"></div>
+          <div id="historyModal" style="display: none;">
+            <div id="matchesContainer" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 20px;">
+            </div>
+          </div>
+              
+            </div>
+          </div>
+
+<!-- Modal para o trailer -->
+<div id="movieTrailerModal" class="trailer-modal">
+<div class="trailer-content">
+    <button onclick="closeTrailerModal()" class="trailer-close-btn">
+        Fechar ✕
+    </button>
+    <div class="trailer-video-container">
+        <iframe 
+            src="https://www.youtube.com/embed/" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen
+            class="trailer-iframe">
+        </iframe>
+    </div>
+</div>
+</div>
+      </main>
+
+
+        
+
+        <footer></footer>
+          <script src="{{ url_for('static', filename='js/movies.js') }}"></script>
+          <script src="{{ url_for('static', filename='js/connect.js') }}"></script>
+          <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+      </body>
+
+
+</html>

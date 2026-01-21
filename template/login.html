@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE-EDGE" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Login</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+
+
+<body>
+  <header>
+    <div id="FirstWave"></div>
+  </header>
+<main>
+  <div class="container" id="loginIndex"> <!-- LOGIN PRINCIPAL -->
+    
+
+    <form id="loginForm">
+      <div class="head"><h1>CUSTOMER LOGIN</h1></div>
+      <div class="namelogin">
+        <input autocomplete="off" class="login" type="text" name="username" placeholder="Username" required />
+      </div>
+
+      <div class="passlogin">
+        <input class="password" type="password" name="password" placeholder="Password" required />
+      </div>
+
+  
+
+      <div class="var">
+        <a id="openForgot">Forgot Password?</a>
+        <a id="openRegister">Register</a>
+      </div>
+
+      <div class="button">
+        <button class="button-58" type="submit">LOGIN</button>
+      </div>
+    </form>
+  </div>
+
+ 
+  <div id="registerModal" class="modal">  <!-- MODAL: REGISTER -->
+    <div class="container1">
+      <div class="head"><h1>REGISTER</h1></div>
+
+      <form id="registerForm">
+        <div class="namelogin">
+          <input class="login" type="email" name="email" placeholder="Email" required />
+        </div>
+
+        <div class="passlogin">
+          <input class="password" type="username" name="username" placeholder="Username" required />
+          <div class="passconfirm">
+            <input class="password" type="password" name="password" placeholder="Password" required />
+          </div>
+        </div>
+
+        <div class="button">
+          <button class="button-58" type="submit">REGISTER</button>
+        </div>
+
+        <a class="back" id="backToLoginFromRegister">Back to Login</a>
+      </form>
+    </div>
+  </div>
+
+
+  <div id="forgotModal" class="modal">  <!-- MODAL: FORGOT PASSWORD -->
+    <div class="container1">
+      <div class="head"><h1>RECOVER ACCOUNT</h1></div>
+
+      <form id="forgotForm">
+        <div class="namelogin">
+          <input class="login" type="email" name="email" placeholder="Email" required />
+        </div>
+
+        <div class="button">
+          <button class="button-58" type="submit">SEND EMAIL</button>
+        </div>
+
+        <a class="back" id="backToLoginFromForgot">Back to Login</a>
+      </form>
+    </div>
+  </div>
+</main>
+<footer>
+
+</footer>
+<script src="{{ url_for('static', filename='js/account.js') }}"></script>
+</body>
+</html>
