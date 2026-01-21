@@ -33,27 +33,43 @@ def create_app():
         try:
             engine = create_engine(db_url, connect_args={"connect_timeout": 10})
             with engine.connect() as conn:
+                # Teste 1: Versão do PostgreSQL
                 result = conn.execute(text("SELECT version()"))
                 version = result.scalar()
                 print(f"✅ PostgreSQL version: {version}")
                 
-                # Verifica se as tabelas existem
+                # Teste 2: Nome do banco
+                result = conn.execute(text("SELECT current_database()"))
+                db_name = result.scalar()
+                print(f"✅ Database: {db_name}")
+                
+                # Teste 3: Tabelas existentes
                 result = conn.execute(text("""
                     SELECT table_name 
                     FROM information_schema.tables 
                     WHERE table_schema = 'public'
+                    ORDER BY table_name
                 """))
                 tables = [row[0] for row in result.fetchall()]
-                print(f"📊 Tabelas existentes: {tables}")
+                print(f"📊 Tabelas no banco: {tables}")
                 
+                # Teste 4: Acesso à tabela MoviesUsers
+                if 'MoviesUsers' in tables:
+                    result = conn.execute(text('SELECT COUNT(*) FROM "MoviesUsers"'))
+                    count = result.scalar()
+                    print(f"✅ Tabela MoviesUsers tem {count} registro(s)")
+                else:
+                    print("❌ Tabela MoviesUsers NÃO encontrada!")
+                    
         except Exception as e:
             print(f"❌ ERRO na conexão: {str(e)[:150]}")
     
     # Inicializa o SQLAlchemy
     db.init_app(app)
+    app.extensions['db'] = db
     
-    # **REMOVI o db.create_all()** - tabelas já criadas via SQL
-    print("✅ Tabelas já criadas manualmente via SQL")
+    print("✅ SQLAlchemy inicializado")
+    print("✅ Tabelas já criadas manualmente via SQL (Neon)")
     
     # Registrar blueprints
     from server.routes.routes import page_bp
@@ -64,6 +80,7 @@ def create_app():
     app.register_blueprint(login_bp)
     app.register_blueprint(movies_bp, url_prefix='/api/movies')
     
+    print("✅ Blueprints registrados")
     print("✅ App configurado com sucesso!")
     return app
 
