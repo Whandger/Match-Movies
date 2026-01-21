@@ -36,31 +36,25 @@ def create_app():
                 result = conn.execute(text("SELECT version()"))
                 version = result.scalar()
                 print(f"✅ PostgreSQL version: {version}")
-                result = conn.execute(text("SELECT current_database()"))
-                db_name = result.scalar()
-                print(f"✅ Database: {db_name}")
+                
+                # Verifica se as tabelas existem
+                result = conn.execute(text("""
+                    SELECT table_name 
+                    FROM information_schema.tables 
+                    WHERE table_schema = 'public'
+                """))
+                tables = [row[0] for row in result.fetchall()]
+                print(f"📊 Tabelas existentes: {tables}")
+                
         except Exception as e:
             print(f"❌ ERRO na conexão: {str(e)[:150]}")
     
     # Inicializa o SQLAlchemy
     db.init_app(app)
     
-    # Criar tabelas se não existirem
-    with app.app_context():
-        try:
-            # Importa e cria todas as tabelas
-            db.create_all()
-            print("✅ Tabelas verificadas/criadas")
-            
-            # Verifica se a tabela MoviesUsers existe
-            from sqlalchemy import inspect
-            inspector = inspect(db.engine)
-            tables = inspector.get_table_names()
-            print(f"📊 Tabelas no banco: {tables}")
-            
-        except Exception as e:
-            print(f"⚠️  Nota sobre tabelas: {str(e)[:100]}")
-
+    # **NÃO cria tabelas automaticamente (já criamos via SQL)**
+    print("✅ Tabelas já criadas manualmente via SQL")
+    
     # Registrar blueprints
     from server.routes.routes import page_bp
     from server.routes.loginroutes import login_bp
