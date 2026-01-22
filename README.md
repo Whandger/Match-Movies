@@ -93,9 +93,10 @@ Inicie o Servidor:
 
 bash
 python run.py
-# Ou, no Windows, dê um duplo clique em `run_app.bat`
-A aplicação estará disponível em http://localhost:5000.
+No Windows, você também pode dar um duplo clique no arquivo run_app.bat.
 
+A aplicação estará disponível em http://localhost:5000.
+```
 🗂 Estrutura do Projeto
 text
 Match-Movies/
@@ -105,9 +106,11 @@ Match-Movies/
 ├── static/            # CSS (estilos, animação do card), JavaScript (interatividade)
 ├── template/          # Páginas HTML (Jinja2)
 ├── run.py             # Ponto de entrada da aplicação
+├── run_app.bat        # Script de inicialização para Windows
 ├── requirements.txt   # Lista de dependências Python
 ├── render.yaml        # Configuração de deploy no Render
-└── LICENSE
+└── LICENSE            # Arquivo de licença
+```
 🔮 Próximos Passos (Roadmap de Ideias)
 ⚙️ Sistema de Recomendação: Algoritmo para sugerir filmes com base nos matches anteriores.
 
@@ -119,3 +122,4 @@ Match-Movies/
 
 📄 Licença
 Distribuído sob a licença presente no arquivo LICENSE.
+
