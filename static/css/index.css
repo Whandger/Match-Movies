@@ -15,6 +15,14 @@
     box-sizing: inherit;
   }
 
+
+html, body {
+  height: 100dvh; /* Usa viewport dinâmico que exclui as barras móveis */
+  width: 100%;
+  overflow: hidden; /* Remove scroll duplo */
+  position: fixed; /* Garante que nada escape da viewport */
+}
+
   body{
     background-color: rgb(54, 14, 14);
     overflow-x: hidden; /* mantém segurança horizontal */
@@ -286,27 +294,14 @@
       #history { /* Modal botão que abre os matchs  */
         position: absolute;
         margin-left:0vw;
-        margin-top:180%;
         width: 17vw;
         height: 8vh;
         border-radius: 2vh;
         background-color: rgb(48, 48, 48);
         z-index: 2;
+        bottom: 22px;
       }
-      
-        @media (max-height: 667px){
-        #history {
-          margin-top: 145%;
-          height: 9vh;
-        } 
-      }     
-        
-        @media (max-height: 740px){
-          #history {
-            margin-top: 150%;
-            height: 9vh;
-          }
-      }
+    
 
       
       footer {
