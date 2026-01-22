@@ -1,5 +1,4 @@
 🎬 Match Movies
-https://img.shields.io/badge/Deploy%2520on-Render-%255B46e3b7%255D?style=for-the-badge&logo=render
 
 O "Tinder" social para descobrir filmes com seus amigos! 🍿
 
@@ -127,5 +126,6 @@ Match-Movies/
 
 📄 Licença
 Distribuído sob a licença presente no arquivo LICENSE.
+
 
 
