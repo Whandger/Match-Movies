@@ -50,6 +50,7 @@ Compartilhe seu ID com um amigo e peça o ID dele.
 
 Clique em "Connect with +", cole o ID do seu amigo e pronto! Comecem a dar likes nos filmes.
 
+```
 🛠 Tecnologias Utilizadas
 Camada	Tecnologias
 Backend & Servidor	Python, Flask
@@ -60,6 +61,7 @@ Hospedagem	Render (render.yaml, Procfile)
 Controle & Deploy	Git, requirements.txt
 📦 Executando Localmente (Para Desenvolvedores)
 Quer contribuir ou rodar uma cópia local? Siga estes passos:
+```
 
 Pré-requisitos
 Python 3.9+
@@ -70,12 +72,13 @@ Banco de dados PostgreSQL (local ou remoto)
 
 Passo a Passo
 Clone o repositório e entre na pasta:
-
+```
 bash
 git clone https://github.com/Whandger/Match-Movies.git
 cd Match-Movies
 Configure o Ambiente e Dependências:
-
+```
+```
 bash
 python -m venv venv
 # Ative o ambiente virtual:
@@ -84,17 +87,19 @@ python -m venv venv
 pip install -r requirements.txt
 Configure as Variáveis de Ambiente:
 Crie um arquivo .env na raiz do projeto com:
-
+```
+```
 env
 DATABASE_URL="sua_url_do_postgres"
 SECRET_KEY="uma_chave_secreta_forte"
 TMDB_API_KEY="sua_chave_da_api_tmdb" # <-- OBRIGATÓRIA para buscar filmes
 Inicie o Servidor:
-
+```
+```
 bash
 python run.py
 No Windows, você também pode dar um duplo clique no arquivo run_app.bat.
-
+```
 A aplicação estará disponível em http://localhost:5000.
 ```
 🗂 Estrutura do Projeto
@@ -122,4 +127,5 @@ Match-Movies/
 
 📄 Licença
 Distribuído sob a licença presente no arquivo LICENSE.
+
 
