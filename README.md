@@ -1,154 +1,121 @@
-Sistema Financeiro Pessoal / Personal Finance System
-Sistema Financeiro Pessoal
-Aplicação web full stack desenvolvida para controle financeiro pessoal, com foco em segurança, experiência do usuário e visualização de dados.
+🎬 Match Movies
+https://img.shields.io/badge/Deploy%2520on-Render-%255B46e3b7%255D?style=for-the-badge&logo=render
 
-🛠️ Tecnologias Utilizadas
-Front-end: HTML, CSS, JavaScript (puro)
+O "Tinder" social para descobrir filmes com seus amigos! 🍿
 
-Back-end: Python (Flask)
+Match Movies é uma aplicação web interativa onde você conecta-se a outros usuários para descobrir, dar "match" e compartilhar filmes em comum. Veja quais filmes você e seus amigos gostam juntos!
 
-Banco de Dados: MySQL
+🔗 Teste Agora: https://match-movies.onrender.com
 
-🚀 Funcionalidades Principais
-Autenticação de Usuário
+✨ Como Funciona (A Experiência Principal)
+A magia do Match Movies está na conexão entre usuários. Veja como é simples:
 
-Telas de login, registro e modal para recuperação de senha (esqueci minha senha em desenvolvimento)
+📝 Crie seu Perfil: Ao acessar o app, um ID único é gerado para você. Esse ID é sua identidade no Match Movies.
 
-Senhas protegidas com hash seguro
+🔗 Conecte-se a Amigos: Clique no botão "Connect with +" no painel esquerdo e cole o ID de outro usuário para iniciar uma conexão.
 
-Acesso restrito a usuários autenticados em todas as páginas
+🎭 Descubra e "Match" em Filmes: O sistema mostrará filmes aleatórios (usando a API do TMDB). Para cada filme:
 
-Redirecionamento automático para o login caso o usuário não esteja autenticado
+❤️ "Like": Se você gostar e a outra pessoa também tiver dado like, é um MATCH!
 
-Dashboard e Navegação
+💔 "Dislike": Passe para o próximo.
 
-Após login, o usuário é direcionado à dashboard (index.html), com nome exibido no canto superior direito em um dropdown
+🔄 Cartão Interativo: Clique no pôster do filme para girar o card e ver detalhes extras: gêneros, descrição completa e link para o trailer!
 
-Dropdown com opções de Alterar Senha e Logout
+📊 Veja os Matches: Clique no quadrado cinza abaixo do filme para abrir um painel e visualizar todos os filmes que deram match com a pessoa conectada!
 
-Navbar com navegação para Home, Data e menu suspenso com Adicionar Despesa, Adicionar Receita e Gráfico de Dados
+🃏 Funcionalidades em Destaque
+Cartão de Filme Interativo: Clique no pôster para girar o card e revelar informações detalhadas como gêneros, sinopse completa e botão para assistir ao trailer.
 
-Gestão de Receitas e Despesas
+Conexão Social por ID: Sistema simples de conectar perfis sem necessidade de login complexo.
 
-Telas específicas para adicionar despesas (categorias como gasto, presente, etc) e receitas (categorias como salário, pix, renda passiva, etc)
+Swipe Interativo: Interface divertida no estilo "Tinder" para avaliar filmes.
 
-Cada lançamento inclui categoria, valor, data e observação
+Painel de Matches em Tempo Real: Visualize instantaneamente quais filmes você e seu amigo gostaram em comum.
 
-Botão de envio desabilitado durante o processamento, com mensagem de sucesso exibida por 1,5s
+Dados Ricos de Filmes: Pôsteres, sinopses e informações trazidas diretamente da API do TMDB (The Movie Database).
 
-Consulta e Edição de Dados
+Design Moderno e Responsivo: Experiência otimizada para desktop e mobile.
 
-Página data.html exibe registros paginados (10 por página), ordenados por data
+Pronto para Produção: Já implantado e funcionando no Render.
 
-UI aprimorada: hover escurece linha, botão X para deletar registro, engrenagem para editar e atualizar informações sem perder o layout
+🚀 Comece Agora em 30 Segundos
+A forma mais rápida é testar a aplicação já implantada:
 
-Visualização Gráfica
+Abra o app: https://match-movies.onrender.com
 
-Página datachart.html exibe gráfico mensal de receitas x despesas, mostrando lucro líquido por mês
+Anote seu User ID (aparece no canto superior direito).
 
-Permite seleção de período para análise personalizada
+Compartilhe seu ID com um amigo e peça o ID dele.
 
-💡 Diferenciais do Projeto
-Interface moderna, responsiva e amigável
+Clique em "Connect with +", cole o ID do seu amigo e pronto! Comecem a dar likes nos filmes.
 
-Feedback visual em todas as ações do usuário
+🛠 Tecnologias Utilizadas
+Camada	Tecnologias
+Backend & Servidor	Python, Flask
+Frontend & UI	HTML, CSS (com transformações 3D para o card), JavaScript
+Banco de Dados	PostgreSQL
+API Externa	The Movie Database (TMDB)
+Hospedagem	Render (render.yaml, Procfile)
+Controle & Deploy	Git, requirements.txt
+📦 Executando Localmente (Para Desenvolvedores)
+Quer contribuir ou rodar uma cópia local? Siga estes passos:
 
-Segurança reforçada com hash de senhas
+Pré-requisitos
+Python 3.9+
 
-Estrutura modular e escalável
+Conta no TMDB para uma chave de API (gratuita)
 
-📦 Como Executar
-Clone o repositório
+Banco de dados PostgreSQL (local ou remoto)
 
-Instale as dependências Python:
-
-bash
-Copiar
-Editar
-pip install -r requirements.txt
-Configure as variáveis de ambiente para acesso ao MySQL
-
-Execute o servidor Flask:cd (raiz do projeto) depois run.py
-Ou execute o arquivo .bat
-Acesse http://localhost:5000 no navegador
-
-
-English version:
-
-Personal Finance System
-A full-stack web application developed for personal financial control, focusing on security, user experience, and data visualization.
-
-🛠️ Technologies Used
-Front-end: HTML, CSS, JavaScript (vanilla)
-
-Back-end: Python (Flask)
-
-Database: MySQL
-
-🚀 Main Features
-User Authentication
-
-Login, registration, and password recovery modal (forgot password in development)
-
-Passwords protected with secure hashing
-
-Restricted access to authenticated users across all pages
-
-Automatic redirect to login if the user is not authenticated
-
-Dashboard and Navigation
-
-After login, the user is directed to the dashboard (index.html), with the name displayed at the top right in a dropdown
-
-Dropdown with options to Change Password and Logout
-
-Navbar with navigation to Home, Data, and a dropdown menu with Add Expense, Add Income, and Data Graph
-
-Income and Expense Management
-
-Specific screens to add expenses (categories like spending, gift, etc.) and income (categories like salary, pix, passive income, etc.)
-
-Each entry includes category, value, date, and note
-
-Submit button is disabled during processing, with a success message shown for 1.5 seconds
-
-Data Query and Edit
-
-The data.html page displays paginated records (10 per page), sorted by date
-
-Enhanced UI: hover darkens the row, X button to delete record, gear icon to edit and update info without losing layout
-
-Graphical Visualization
-
-The datachart.html page displays a monthly chart of income vs. expenses, showing net profit per month
-
-Allows period selection for customized analysis
-
-💡 Project Highlights
-Modern, responsive, and user-friendly interface
-
-Visual feedback for every user action
-
-Strong security with password hashing
-
-Modular and scalable structure
-
-📦 How to Run
-Clone the repository
-
-Install the Python dependencies:
+Passo a Passo
+Clone o repositório e entre na pasta:
 
 bash
-Copiar
-Editar
+git clone https://github.com/Whandger/Match-Movies.git
+cd Match-Movies
+Configure o Ambiente e Dependências:
+
+bash
+python -m venv venv
+# Ative o ambiente virtual:
+# Windows: venv\Scripts\activate
+# Linux/Mac: source venv/bin/activate
 pip install -r requirements.txt
-Set up environment variables for MySQL access
+Configure as Variáveis de Ambiente:
+Crie um arquivo .env na raiz do projeto com:
 
-Run the Flask server:
+env
+DATABASE_URL="sua_url_do_postgres"
+SECRET_KEY="uma_chave_secreta_forte"
+TMDB_API_KEY="sua_chave_da_api_tmdb" # <-- OBRIGATÓRIA para buscar filmes
+Inicie o Servidor:
 
-CD (Your project path)
+bash
 python run.py
+# Ou, no Windows, dê um duplo clique em `run_app.bat`
+A aplicação estará disponível em http://localhost:5000.
 
-Or execute the .bat archive
+🗂 Estrutura do Projeto
+text
+Match-Movies/
+├── database/          # Modelos e lógica de banco de dados (usuários, matches)
+├── server/            # Lógica principal do backend Flask
+│   └── movies.py      # Integração com a API do TMDB (busca filmes, detalhes, trailer)
+├── static/            # CSS (estilos, animação do card), JavaScript (interatividade)
+├── template/          # Páginas HTML (Jinja2)
+├── run.py             # Ponto de entrada da aplicação
+├── requirements.txt   # Lista de dependências Python
+├── render.yaml        # Configuração de deploy no Render
+└── LICENSE
+🔮 Próximos Passos (Roadmap de Ideias)
+⚙️ Sistema de Recomendação: Algoritmo para sugerir filmes com base nos matches anteriores.
 
-Access http://localhost:5000 in your browser
+👥 Perfis Públicos: Página para ver os matches e filmes favoritos de outros usuários.
+
+💬 Chat por Match: Conversar sobre aquele filme que ambos amaram.
+
+🎯 Filtros de Gênero/Ano: Antes de começar o "swipe", definir preferências.
+
+📄 Licença
+Distribuído sob a licença presente no arquivo LICENSE.
