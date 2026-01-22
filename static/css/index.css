@@ -307,7 +307,7 @@ html, body {
       footer {
         width: 100vw;
         height: 24vh;
-        
+        background-color: #3c0404;
       }
 
       #historyModal {
@@ -315,7 +315,7 @@ html, body {
         display: flex;
         justify-content: center;
         width: 100vw;
-        height: 87%;
+        height: 87dvh;
         background-color: rgb(68, 70, 71);
         padding-top: 4%;
         top: 0;
