@@ -1,428 +1,549 @@
 /* Reset padrão */
 * {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    box-sizing: border-box;
-    font: inherit;
-  }
-  
-  *,
-  *::before,
-  *::after {
-    box-sizing: inherit;
-  }
-
-
-html, body {
-  height: 100dvh; /* Usa viewport dinâmico que exclui as barras móveis */
-  width: 100%;
-  overflow: hidden; /* Remove scroll duplo */
-  position: fixed; /* Garante que nada escape da viewport */
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-sizing: border-box;
+  font: inherit;
 }
 
-  body{
-    background-color: rgb(54, 14, 14);
-    overflow-x: hidden; /* mantém segurança horizontal */
-    overflow-y: hidden;  /* deixa a página rolar normalmente */
-  }
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
 
-    header{
-      width: 100vw;
-      height: 10vh;
-      text-align: center;
-      background-color: rgb(255, 0, 0); 
-      box-shadow: rgba(255, 0, 0, 0.849) 1vh 0.01vh 0vh 1vh;  
-      display: grid;
-      grid-template-columns: 33.33% 3fr;
-      grid-template-rows: 33.33% 3fr;
-      z-index: 1000;
-    }
+/* 🔥 USANDO DVH COMO VOCÊ QUERIA */
+html, body {
+  height: 100dvh; /* 🔥 Agora usando dvh */
+  width: 100%;
+  overflow: hidden;
+}
 
-      div.title {
-        grid-row: 1;
-        grid-column: 2 span 2;
-        width: 100vw;
-        height: 3vh;
-        }
-      div.connect{
-        width: 50vw;
-        height: 4vh;
-        grid-row: 3;
-        grid-column: 1;
-        display: flex;
-        flex-direction: column;
-      }
-        #connectModal{
-          margin-left: 5vh;
-          width: 60vw;
-          height: 10vh;
-          background-color: rgb(145, 145, 145);
-          z-index: 2;
-        }
+body {
+  background-color: rgb(54, 14, 14);
+  display: flex; /* 🔥 CHAVE: Layout flexível */
+  flex-direction: column; /* 🔥 CHAVE: Organiza header, main, footer */
+  overflow-x: hidden;
+  min-height: 100dvh; /* 🔥 Garante altura mínima com dvh */
+}
 
-          ::placeholder{
-            color: rgb(0, 0, 0);
-          }
+/* HEADER - Com dvh */
+header {
+  width: 100vw;
+  height: 10dvh; /* 🔥 dvh aqui também */
+  min-height: 60px;
+  text-align: center;
+  background-color: rgb(255, 0, 0); 
+  box-shadow: rgba(255, 0, 0, 0.849) 1vh 0.01vh 0vh 1vh;  
+  display: grid;
+  grid-template-columns: 33.33% 3fr;
+  grid-template-rows: 33.33% 3fr;
+  z-index: 1000;
+  flex-shrink: 0;
+}
 
-          #connectInput {
-            width: 60vw;
-            height: 5vh;
-            font-size: 1.1rem;
-          }
-          #connectButton {
-            font-size: 1.2rem;
-            width: 60vw;
-            height: 4vh;
-            background-color: azure;
-          }
+/* MAIN - Ocupa espaço disponível */
+main {
+  width: 100vw;
+  flex: 1; /* 🔥 Ocupa TODO espaço disponível */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* Para o botão #history */
+  overflow: hidden;
+}
 
-      div.profile{
-        width: 50vw;
-        height: 3vh;
-        grid-row: 3;
-        grid-column: 3;
-      }
+/* FOOTER - Com dvh */
+footer {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  height: 6dvh; /* 🔥 dvh aqui também */
+  min-height: 40px;
+  background-color: #6e0000;
+  flex-shrink: 0;
+}
 
-      h1 {
-        font: 2.2em sans-serif;
-      }
+/* BOTÃO HISTÓRICO - Corrige posicionamento */
+#history {
+  position: absolute; /* Absoluto dentro do main */
+  bottom: 2dvh; /* Distância da base do main */
+  width: 17vw;
+  min-width: 60px;
+  max-width: 68px;
+  height: 8dvh; /* 🔥 dvh aqui também */
+  min-height: 50px;
+  border-radius: 2vh;
+  background-color: rgb(48, 48, 48);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+  text-align: center;
+  z-index: 9999;
+}
 
-      h2 {
-        font: 1.2em sans-serif;
-      }
+/* MODAL HISTÓRICO - Com dvh */
+#historyModal {
+  position: fixed; /* Fixo na tela */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 84dvh; /* 🔥 dvh para tela cheia */
+  background-color: rgb(68, 70, 71);
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10dvh; /* 🔥 dvh para espaço do header */
+  overflow: hidden;
+}
 
-      a {
-        font: 1.2em sans-serif;
-        text-decoration: none;
-        color: black;
-      }
-    
+/* CARD - Mantendo suas medidas */
+.cardInner {
+  width: 85vw;
+  height: 72dvh; /* 🔥 dvh aqui também */
+  max-height: 500px;
+  background-color: rgb(134, 134, 134);
+  border-radius: 2vh;
+  transition: transform 1s;
+  position: relative;
+  transform-style: preserve-3d;
+}
 
-    main {
-      width: 100vw;
-      height: 83vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    section {
-      perspective: 1000px;
-    }
-
-    .cardInner {
-      width: 85vw;
-      height: 72vh;
-      background-color: rgb(134, 134, 134);
-      border-radius:2vh 2vh 0vh 0vh;
-      transition: transform 1s;
-      position: relative;
-      transform-style: preserve-3d;
-      border-radius: 2vh 2vh 2vh 2vh;
+/* CORREÇÃO ESPECÍFICA PARA iOS SAFARI */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  html, body {
+      height: -webkit-fill-available;
+      min-height: -webkit-fill-available;
   }
   
-  .cardInner.flipped {
-      transform: rotateY(180deg);
+  body {
+      min-height: -webkit-fill-available;
   }
+  
+  #historyModal {
+      height: -webkit-fill-available;
+      padding-top: calc(10dvh + env(safe-area-inset-top));
+  }
+  
+  .cardInner {
+      height: 72vh; /* Fallback para iOS antigo */
+  }
+}
 
-      div.cardFront, div.cardBack {
-        position: absolute;
-        backface-visibility: hidden;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-      }
+/* FALLBACK para navegadores sem suporte a dvh */
+@supports not (height: 100dvh) {
+  html, body {
+      height: 100vh;
+  }
+  
+  body {
+      min-height: 100vh;
+  }
+  
+  header {
+      height: 10vh;
+  }
+  
+  footer {
+      height: 6vh;
+  }
+  
+  #history {
+      height: 8vh;
+  }
+  
+  #historyModal {
+      height: 100vh;
+      padding-top: 10vh;
+  }
+  
+  .cardInner {
+      height: 72vh;
+  }
+}
 
-      .moviePic {
-        height: 100%; /* ou a altura que você quiser */
-        width: 100%;
-        background-color: #f0f0f0; /* cor de fallback */
-        background-size: cover;
-        background-position: center;
-        border-radius: 10px 10px 0 0; /* se quiser bordas arredondadas no topo */
-    }
+/* 🔥 RESPONSIVIDADE PARA TELAS MUITO PEQUENAS */
+@media (max-height: 600px) {
+  .cardInner {
+      height: 65dvh;
+      max-height: 400px;
+  }
+  
+  #history {
+      bottom: 20px;
+      right: 15px;
+  }
+}
 
-      div.infoCard{
-        height: 2.5vh;
-        background-color: rgb(161, 161, 161);
-      }
+/* 🔥 Para telas muito largas (tablets) */
+@media (min-width: 768px) and (min-height: 1024px) {
+  .cardInner {
+      height: 70dvh;
+      max-height: 600px;
+  }
+}
 
-      .infoCard {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 15px;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        font-weight: bold;
-        font-size: 0.9rem;
-    }
-    
-    .rating {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 1rem;
-    }
-    
-    .release-date {
-        background: #700000;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 1rem;
-    }
+/* 🔥 MELHORIA: Meta viewport para mobile */
+@media (max-width: 768px) {
+  body {
+      /* Garante que o conteúdo não ultrapasse a viewport */
+      max-height: 100dvh;
+  }
+  
+  /* Ajuste fino para botões em telas pequenas */
+  #like, #indicate, #dislike {
+      min-height: 50px;
+  }
+}
 
-      div.reaction {
-        height: 10vh;
-        background-color: rgb(204, 204, 204);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        justify-content: space-around;
-        border-radius: 0vh 0vh 2vh 2vh;
-        overflow: hidden;
-      }
+/* 🔥 Mantendo o resto do seu CSS ORIGINAL (apenas substitua as alturas com dvh onde apropriado) */
 
-      #like,#indicate,#dislike{
-        width: 33.35%;
-        height: 100%;
-        background-size: 32% auto;
-        background-repeat: no-repeat;
-        background-position: center;
+div.title {
+  grid-row: 1;
+  grid-column: 2 span 2;
+  width: 100vw;
+  height: 3vh;
+}
 
-      }
-        #like{
-          background-color: rgb(0, 255, 170);
-          background-image: url("../images/like.png");
-        }
-        #indicate{
-          background-color: rgb(0, 183, 255);
-          background-image: url("../images/heart.png");
-        }
-        #dislike{
-          background-color: rgb(255, 48, 48);
-          background-image: url("../images/dislike.png");
-        }
-        
-        div.cardBack {
-          transform: rotateY(180deg);
-          overflow: hidden;
-        }
+div.connect{
+  width: 50vw;
+  height: 4vh;
+  grid-row: 3;
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+}
 
-        div.titleMovie {
-          width: 100%;
-          height: 8vh;
-          font-size: 1.4rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-        }
+#connectModal{
+  margin-left: 5vh;
+  width: 60vw;
+  height: 10vh;
+  background-color: rgb(145, 145, 145);
+  z-index: 2;
+}
 
-        #titleName {
-          text-align: center;
-        }
+::placeholder{
+  color: rgb(0, 0, 0);
+}
 
-        div.genre{
-          width: 100%;
-          height: auto;
-          font-size: 1.2rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+#connectInput {
+  width: 60vw;
+  height: 5vh;
+  font-size: 1.1rem;
+}
 
-        .genre {
-          margin: 2px 0;
-      }
+#connectButton {
+  font-size: 1.2rem;
+  width: 60vw;
+  height: 4vh;
+  background-color: azure;
+}
 
-      div.trailer{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-      }
+div.profile{
+  width: 50vw;
+  height: 3vh;
+  grid-row: 3;
+  grid-column: 3;
+}
 
-      #trailer{
-        border-radius: 5vh;
-        background-color: #700000;
-        color: white;
-        width: auto;
-        padding: 0.3vh 2vh 0.3vh 2vh;
-        margin-bottom: 1vh;
-      }
+h1 {
+  font: 2.2em sans-serif;
+}
 
-      .trailer button:disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-    
-    .trailer button:disabled:hover {
-        transform: none !important;
-    }
-      
-      .genre-tag {
-          display: inline-block;
-          background: #e40101;
-          color: white;
-          padding: 0.3vh 2vh 0.3vh 2vh;
-          border-radius: 12px;
-          font-size: 1rem;
-          gap: 1px;
-          margin-bottom: 5px;
-      }
+h2 {
+  font: 1.2em sans-serif;
+}
 
-        div.desc {
-          width: 100%;
-          height: 100%;
-          background-color: rgb(109, 109, 109);
-          border-radius: 0vh 0vh 2vh 2vh;
-        }
-        #description{
-          padding: 0.7rem;
-          text-align: justify;
-          text-shadow: 0px 0px 1px rgb(255 0 0 / 63%);
-          font-weight: bold;
-        }
+a {
+  font: 1.2em sans-serif;
+  text-decoration: none;
+  color: black;
+}
 
-      #history { /* Modal botão que abre os matchs  */
-        position: absolute;
-        margin-left:0vw;
-        width: 17vw;
-        height: 8vh;
-        border-radius: 2vh;
-        background-color: rgb(48, 48, 48);
-        z-index: 2;
-        bottom: 22px;
-      }
-    
+section {
+  perspective: 1000px;
+}
 
-      
-      footer {
-        width: 100vw;
-        height: 24vh;
-        background-color: #6e0000;
-      }
+.cardInner.flipped {
+  transform: rotateY(180deg);
+}
 
-      #historyModal {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        width: 100vw;
-        height: 91dvh;
-        background-color: rgb(68, 70, 71);
-        padding-top: 4%;
-        top: 0;
-        overflow: hidden; /* Remove scroll do modal principal */
-    }
-    
-    /* Container dos matches COM SCROLL */
-    #matchesContainer {
-        width: 100%;
-        height: 100%; /* Ocupa toda altura disponível */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-        padding: 20px;
-        overflow-y: auto; /* Habilita scroll vertical */
-        overflow-x: hidden; /* Remove scroll horizontal */
-    }
-    
-    /* Personalização da scrollbar */
-    #matchesContainer::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    #matchesContainer::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-    }
-    
-    #matchesContainer::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 4px;
-    }
-    
-    #matchesContainer::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.5);
-    }
-    
-    /* Cada item de match - MANTENDO SEU ESTILO ORIGINAL */
-    .match-item {
-        display: grid;
-        align-items: center;
-        width: 90%;
-        height: 15%; /* Mantém sua proporção original */
-        min-height: 100px; /* Altura mínima para garantir visibilidade */
-        background-color: rgb(143, 143, 143);
-        grid-template-columns: 40% 2fr;
-        grid-template-rows: 50% 2fr;
-        padding-left: 2%;
-        padding-right: 2%;
-        flex-shrink: 0; /* Impede que os itens encolham */
-    }
-    
-    .match-cover {
-        width: 60%;
-        height: 80%;
-        background-color: black;
-        grid-column: 1;
-        grid-row: 1 / span 2;
-        object-fit: cover; /* Garante que a imagem se ajuste */
-    }
-    
-    .match-title {
-        grid-column: 2;
-        grid-row: 1 / span 2;
-        width: 95%;
-        height: 80%;
-        background-color: #e40101;
-        color: white;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        padding-left: 10px;
-        font-weight: bold;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: wrap;
-        text-align: left;
-    }
-    
-    /* Suas animações existentes */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .match-item {
-        animation: fadeIn 0.5s ease-in;
-    }
-    
-    .match-cover:not([src]) {
-        background: linear-gradient(45deg, #333, #555);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 12px;
-    }
-    
-    .match-cover:not([src])::after {
-        content: "Sem imagem";
-    }
+div.cardFront, div.cardBack {
+  position: absolute;
+  backface-visibility: hidden;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.moviePic {
+  height: 100%;
+  width: 100%;
+  background-color: #f0f0f0;
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px 10px 0 0;
+}
+
+div.infoCard{
+  height: 2.5vh;
+  background-color: rgb(161, 161, 161);
+}
+
+.infoCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 1rem;
+}
+
+.release-date {
+  background: #700000;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 1rem;
+}
+
+div.reaction {
+  height: 10vh;
+  background-color: rgb(204, 204, 204);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: space-around;
+  border-radius: 0vh 0vh 2vh 2vh;
+  overflow: hidden;
+}
+
+#like,#indicate,#dislike{
+  width: 33.35%;
+  height: 100%;
+  background-size: 32% auto;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#like{
+  background-color: rgb(0, 255, 170);
+  background-image: url("../images/like.png");
+}
+
+#indicate{
+  background-color: rgb(0, 183, 255);
+  background-image: url("../images/heart.png");
+}
+
+#dislike{
+  background-color: rgb(255, 48, 48);
+  background-image: url("../images/dislike.png");
+}
+
+div.cardBack {
+  transform: rotateY(180deg);
+  overflow: hidden;
+}
+
+div.titleMovie {
+  width: 100%;
+  height: 8vh;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+#titleName {
+  text-align: center;
+}
+
+div.genre{
+  width: 100%;
+  height: auto;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.genre {
+  margin: 2px 0;
+}
+
+div.trailer{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+#trailer{
+  border-radius: 5vh;
+  background-color: #700000;
+  color: white;
+  width: auto;
+  padding: 0.3vh 2vh 0.3vh 2vh;
+  margin-bottom: 1vh;
+}
+
+.trailer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.trailer button:disabled:hover {
+  transform: none !important;
+}
+
+.genre-tag {
+  display: inline-block;
+  background: #e40101;
+  color: white;
+  padding: 0.3vh 2vh 0.3vh 2vh;
+  border-radius: 12px;
+  font-size: 1rem;
+  gap: 1px;
+  margin-bottom: 5px;
+}
+
+div.desc {
+  width: 100%;
+  height: 100%;
+  background-color: rgb(109, 109, 109);
+  border-radius: 0vh 0vh 2vh 2vh;
+}
+
+#description{
+  padding: 0.7rem;
+  text-align: justify;
+  text-shadow: 0px 0px 1px rgb(255 0 0 / 63%);
+  font-weight: bold;
+}
+
+/* Container dos matches COM SCROLL */
+#matchesContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Personalização da scrollbar */
+#matchesContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+#matchesContainer::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+#matchesContainer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+#matchesContainer::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Cada item de match */
+.match-item {
+  display: grid;
+  align-items: center;
+  width: 90%;
+  height: 15%;
+  min-height: 100px;
+  background-color: rgb(143, 143, 143);
+  grid-template-columns: 40% 2fr;
+  grid-template-rows: 50% 2fr;
+  padding-left: 2%;
+  padding-right: 2%;
+  flex-shrink: 0;
+}
+
+.match-cover {
+  width: 60%;
+  height: 80%;
+  background-color: black;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  object-fit: cover;
+}
+
+.match-title {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 95%;
+  height: 80%;
+  background-color: #e40101;
+  color: white;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: wrap;
+  text-align: left;
+}
+
+/* Suas animações existentes */
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: translateY(-20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+.match-item {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.match-cover:not([src]) {
+  background: linear-gradient(45deg, #333, #555);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+}
+
+.match-cover:not([src])::after {
+  content: "Sem imagem";
+}
+
 /* Modal do Trailer */
 .trailer-modal {
   display: none;
@@ -430,7 +551,7 @@ html, body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100dvh; /* 🔥 dvh aqui também */
   background: rgba(0,0,0,0.95);
   z-index: 1000;
   justify-content: center;
@@ -503,6 +624,7 @@ html, body {
       max-height: 80%;
   }
 }
+
 /* Para forçar landscape em mobile (opcional) */
 @media (max-width: 768px) and (orientation: portrait) {
   .trailer-modal {
@@ -513,5 +635,3 @@ html, body {
       left: -63%;
   }
 }
-    
-
