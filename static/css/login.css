@@ -12,16 +12,18 @@ html {
   background-size: 100% auto;
 }
 
-div.container{
-box-sizing: border-box;
-display: flex;
-flex-direction: column;
-text-align: center;
-height: 20vh;
-height: 26vh;
-min-width: 50vh;
-max-width: 60VH;
-border-radius: 20px;
+div.container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  height: 20vh;
+  height: 26vh; /* Esta linha sobrescreve a anterior */
+  min-width: 50vh;
+  max-width: 60vh;
+  border-radius: 20px;
+  position: relative; /* ← ADICIONE ISSO */
+  z-index: 9999; /* ← Agora funciona! */
 }
 div.container1{
   box-sizing: border-box;
@@ -48,7 +50,6 @@ Div.namelogin{
 
 input{
   padding-top: 1vh;
-  font-size: 2vh;
   border-top:transparent;
   border-left: transparent;
   border-right: transparent;
@@ -79,7 +80,8 @@ a {
     background-image: url("../images/BottomWaveRed.svg");    
     background-size: 100% auto;
     background-position: bottom center;
-    bottom: 0;
+    background-repeat: no-repeat;
+    bottom: -5vh;
   }
 
  /* botão --------------------------------------------------------*/
@@ -172,7 +174,7 @@ z-index: 1000;
     display: flex;
     justify-content: space-between;
     margin-top: 40px;
-    padding: 0 90px;
+    padding: 0 43px;
   }
 
   .var a {
