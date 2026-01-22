@@ -12,6 +12,7 @@ Match Movies é uma aplicação web interativa onde você conecta-se a outros us
 ![Card De trás](static/preview/Card_Secundario.png)
 
 ✨ Como Funciona (A Experiência Principal)
+
 A magia do Match Movies está na conexão entre usuários. Veja como é simples:
 
 📝 Crie seu Perfil: Ao acessar o app, um ID único é gerado para você. Esse ID é sua identidade no Match Movies.
@@ -131,6 +132,7 @@ Match-Movies/
 
 📄 Licença
 Distribuído sob a licença presente no arquivo LICENSE.
+
 
 
 
