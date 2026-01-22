@@ -6,6 +6,11 @@ Match Movies é uma aplicação web interativa onde você conecta-se a outros us
 
 🔗 Teste Agora: https://match-movies.onrender.com
 
+**PREVIEW**
+
+![Card Frontal](static/preview/Card_Principal.png)
+![Card De trás](static/preview/Card_Secundario.png)
+
 ✨ Como Funciona (A Experiência Principal)
 A magia do Match Movies está na conexão entre usuários. Veja como é simples:
 
@@ -126,6 +131,7 @@ Match-Movies/
 
 📄 Licença
 Distribuído sob a licença presente no arquivo LICENSE.
+
 
 
 
