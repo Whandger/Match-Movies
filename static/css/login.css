@@ -63,14 +63,14 @@ input{
 
 ::placeholder{
     font-size: 2vh;
-    color: rgba(240, 248, 255, 0.425);
+    color: rgba(240, 248, 255, 0.74);
     padding-top: 0px;
     padding-right: 20px;
     border-bottom-color: #777777; 
 }
 
 a {
-    color: rgb(168, 168, 168);
+    color: rgb(212, 212, 212);
     background-color: transparent;
     text-decoration: none; 
   }
@@ -88,54 +88,33 @@ a {
   }
 
  /* botão --------------------------------------------------------*/
-div.button{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-top: 4vh;
+ button {
+  margin-top: 5dvh;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 500;
+  color: #ffffffc7;
+  text-shadow: none;
+  background: transparent;
+  cursor: pointer;
+  box-shadow: transparent;
+  border: 1px solid #ffffffce;
+  transition: 0.5s ease;
+  user-select: none;
 }
-.button-58 {
-    align-items: center;
-    background-color: rgb(233, 0, 0);
-    border: 2px solid rgb(0, 24, 61);
-    box-sizing: border-box;
-    color: #dfdfdf;
-    cursor: pointer;
-    display: inline-flex;
-    fill: #000;
-    font-family: Inter,sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    height: 48px;
-    justify-content: center;
-    letter-spacing: -.8px;
-    line-height: 24px;
-    min-width: 140px;
-    outline: 0;
-    padding: 0 17px;
-    text-align: center;
-    text-decoration: none;
-    transition: all .3s;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-  }
-  
-  .button-58:focus {
-    color: #dfdfdf;
-  }
-  
-  .button-58:hover {
-    background-color: #314361;
-    border-color: #314361;
-    fill: #314361;
-  }
-  
-  .button-58:active {
-    background-color: #2159ac;
-    border-color: #2159ac;
-    fill: #2159ac;
-  }
+
+#button-58:hover,
+:focus {
+  color: #ffffff;
+  background: #ff0000;
+  border: 1px solid #ff0000;
+  text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 20px #ffffff;
+  box-shadow: 0 0 2.5px #ff0000, 0 0 10px #ff0000, 0 0 25px #ff0000,
+    0 0 100px #ff0000;
+}
+
   
   /* botão --------------------------------------------------------*/
 
@@ -192,11 +171,4 @@ z-index: 1000;
 
   a.back {
     cursor: pointer;
-
   }
-
-
-
-
-
-
