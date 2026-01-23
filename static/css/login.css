@@ -18,7 +18,7 @@ div.container {
   display: flex;
   flex-direction: column;
   text-align: center;
-  height: 20vh;
+  height: 32dvh;
   min-width: 50vh;
   max-width: 60vh;
   border-radius: 20px;
@@ -190,4 +190,5 @@ z-index: 1000;
 
   a.back {
     cursor: pointer;
+
   }
