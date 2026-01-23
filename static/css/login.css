@@ -6,7 +6,7 @@ html {
 }
 
 #FirstWave {
-  background-image: url("../images/TopWaveRedTextCurve.svg");
+  background-image: url("../images/TopWaveRedTextCurv.svg");
   width: 100vw;
   height: 40vh;    
   background-size: 100% auto;
@@ -194,4 +194,5 @@ z-index: 1000;
     cursor: pointer;
 
   }
+
 
