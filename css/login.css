@@ -1,0 +1,185 @@
+html {
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden; /* mantém segurança horizontal */
+  overflow-y: hidden;  /* deixa a página rolar normalmente */
+}
+
+input {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px rgb(54, 14, 14) inset !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+
+#FirstWave {
+  background-image: url("../images/TopWaveRedTextCurve.svg");
+  width: 100vw;
+  height: 40vh;    
+  background-size: 100% auto;
+  margin-top:-7vh;
+}
+
+div.container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  height: 36dvh;
+  min-width: 50vh;
+  max-width: 60vh;
+  border-radius: 20px;
+  position: relative; 
+  z-index: 9999;
+}
+div.container1{
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  margin-top: 37dvh;
+  }
+    
+  
+
+div.head{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 50px;
+    height: 20px;
+    color: #ffffff;
+}
+
+Div.namelogin{
+  padding-top: 4vh;
+}
+
+input{
+  padding-top: 1vh;
+  border-top:transparent;
+  border-left: transparent;
+  border-right: transparent;
+  border-bottom: #ffffff solid 1px;
+  color: aliceblue;
+  overflow: hidden;
+  outline:none ;
+  width: 70vw;
+  height: 5vh;
+}
+
+::placeholder{
+    font-size: 2vh;
+    color: rgba(240, 248, 255, 0.74);
+    padding-top: 0px;
+    padding-right: 20px;
+    border-bottom-color: #777777; 
+}
+
+a {
+    color: rgb(212, 212, 212);
+    background-color: transparent;
+    text-decoration: none; 
+  }
+
+  footer {
+    position: absolute;
+    width: 100vw;
+    height: 24vh;
+    background-image: url("../images/BottomWaveRed.svg");    
+    background-size: 100% auto;
+    background-position: bottom center;
+    background-repeat: no-repeat;
+    bottom: -5vh;
+    background-color: rgb(54, 14, 14);
+  }
+
+ /* botão --------------------------------------------------------*/
+ button {
+  margin-top: 5dvh;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 500;
+  color: #ffffffc7;
+  text-shadow: none;
+  background: transparent;
+  cursor: pointer;
+  box-shadow: transparent;
+  border: 1px solid #ffffffce;
+  transition: 0.5s ease;
+  user-select: none;
+}
+
+.button-58:hover,
+.button-58:focus {
+  color: #ffffff;
+  background: #ff0000;
+  border: 1px solid #ff0000;
+  text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 20px #ffffff;
+  box-shadow: 0 0 2.5px #ff0000, 0 0 10px #ff0000, 0 0 25px #ff0000,
+    0 0 100px #ff0000;
+}
+
+  
+  /* botão --------------------------------------------------------*/
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+  }
+
+  .modal .container {
+position: fixed;
+top: 48.3%;
+left: 50%;
+transform: translate(-50%, -50%);
+margin: 0;
+z-index: 1000;
+}
+
+  .close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .close:hover {
+    color: white;
+  }
+
+  .var {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding: 0 43px;
+  }
+
+  .var a {
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  a.back {
+    display: block;
+    margin-top: 15px;
+  }
+
+  a.back {
+    cursor: pointer;
+  }
