@@ -101,6 +101,11 @@ function createMatchElement(match, container, index) {
     const titleElement = document.createElement('p');
     titleElement.className = 'match-title';
     titleElement.textContent = `Carregando...`;
+
+    // Criar informação do parceiro
+    const partnerElement = document.createElement('p');
+    partnerElement.className = 'match-partner';
+    partnerElement.textContent = `Com: ${match.partner_username}`;
     
     // Adicionar elementos ao match
     matchElement.appendChild(imgElement);
@@ -228,4 +233,5 @@ document.addEventListener('DOMContentLoaded', function() {
     addBasicStyles();
     console.log("✅ JavaScript de matches carregado e pronto!");
 });
+
 
