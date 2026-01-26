@@ -224,6 +224,7 @@ function addBasicStyles() {
                 color: white;
             }
             .match-partner {
+                display: none;
                 font-size: 14px;
                 margin: 0;
                 color: #00adb5;
@@ -238,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
     addBasicStyles();
     console.log("✅ JavaScript de matches carregado e pronto!");
 });
+
 
 
 
