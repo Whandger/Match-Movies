@@ -158,33 +158,24 @@ def get_matches():
     try:
         if 'user_id' not in session:
             return jsonify({'error': 'Usuário não logado'}), 401
-        
+
         user_id = session['user_id']
         db = current_app.extensions.get('db')
-        
+
         if db is None:
             return jsonify({'error': 'Database não configurado'}), 500
-        
+
         print(f"\n🔍 Buscando matches para user_id={user_id}")
-        
-        # Buscar conexões com matches
+
+        # Buscar conexões com matches (sem trazer partner_username)
         connections_data = db.session.execute(
             text("""
                 SELECT 
                     uc.id as connection_id,
                     uc.match_count,
                     uc.last_match_at,
-                    uc.matched_movies,
-                    CASE 
-                        WHEN uc.user1_id = :user_id THEN uc.user2_id 
-                        ELSE uc.user1_id 
-                    END as partner_id,
-                    mu.username as partner_username
+                    uc.matched_movies
                 FROM "UserConnections" uc
-                JOIN "MoviesUsers" mu ON mu.id = CASE 
-                    WHEN uc.user1_id = :user_id THEN uc.user2_id 
-                    ELSE uc.user1_id 
-                END
                 WHERE (uc.user1_id = :user_id OR uc.user2_id = :user_id) 
                   AND uc.is_active = TRUE
                   AND uc.match_count > 0
@@ -192,23 +183,20 @@ def get_matches():
             """),
             {'user_id': user_id}
         ).fetchall()
-        
+
         print(f"📊 Conexões com matches: {len(connections_data)}")
-        
+
         all_matches = []
-        
+
         for row in connections_data:
             connection_id = row[0]
             match_count = row[1]
             last_match_at = row[2]
             matched_movies = row[3]
-            partner_id = row[4]
-            partner_username = row[5]
-            
-            print(f"\n📋 Conexão {connection_id}:")
-            print(f"   Parceiro: {partner_username} (ID: {partner_id})")
+
+            print(f"\n📋 Conexão {connection_id}")
             print(f"   Match count: {match_count}")
-            
+
             # Converter matched_movies para lista
             movies_list = []
             if matched_movies:
@@ -219,31 +207,30 @@ def get_matches():
                         movies_list = []
                 else:
                     movies_list = matched_movies
-            
+
             print(f"   Matches: {movies_list}")
             print(f"   Quantidade: {len(movies_list)}")
-            
+
             for movie_id in movies_list:
                 all_matches.append({
                     'connection_id': connection_id,
                     'movie_id': movie_id,
-                    'partner_id': partner_id,
-                    'partner_username': partner_username,
                     'match_count': match_count,
                     'last_match_at': last_match_at.isoformat() if last_match_at else None
                 })
-        
+
         print(f"\n✅ TOTAL DE MATCHES: {len(all_matches)}")
-        
+
         return jsonify({
             'success': True,
             'matches': all_matches,
             'total_matches': len(all_matches)
         })
-        
+
     except Exception as e:
         print(f"❌ ERRO ao buscar matches: {str(e)}")
         return jsonify({'success': False, 'error': str(e)[:200]}), 500
+
 
 # ============================================================================
 # JAVASCRIPT ATUALIZADO PARA O FRONTEND
@@ -691,3 +678,4 @@ def get_user_connections():
     except Exception as e:
         print(f"❌ ERRO ao buscar conexões: {str(e)}")
         return jsonify({'connections': []})
+
