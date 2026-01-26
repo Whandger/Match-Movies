@@ -167,15 +167,24 @@ def get_matches():
 
         print(f"\n🔍 Buscando matches para user_id={user_id}")
 
-        # Buscar conexões com matches (sem trazer partner_username)
+        # Buscar conexões com matches
         connections_data = db.session.execute(
             text("""
                 SELECT 
                     uc.id as connection_id,
                     uc.match_count,
                     uc.last_match_at,
-                    uc.matched_movies
+                    uc.matched_movies,
+                    CASE 
+                        WHEN uc.user1_id = :user_id THEN uc.user2_id 
+                        ELSE uc.user1_id 
+                    END as partner_id,
+                    mu.username as partner_username
                 FROM "UserConnections" uc
+                JOIN "MoviesUsers" mu ON mu.id = CASE 
+                    WHEN uc.user1_id = :user_id THEN uc.user2_id 
+                    ELSE uc.user1_id 
+                END
                 WHERE (uc.user1_id = :user_id OR uc.user2_id = :user_id) 
                   AND uc.is_active = TRUE
                   AND uc.match_count > 0
@@ -193,8 +202,11 @@ def get_matches():
             match_count = row[1]
             last_match_at = row[2]
             matched_movies = row[3]
+            partner_id = row[4]
+            partner_username = row[5]
 
-            print(f"\n📋 Conexão {connection_id}")
+            print(f"\n📋 Conexão {connection_id}:")
+            print(f"   Parceiro: {partner_username} (ID: {partner_id})")
             print(f"   Match count: {match_count}")
 
             # Converter matched_movies para lista
@@ -215,6 +227,8 @@ def get_matches():
                 all_matches.append({
                     'connection_id': connection_id,
                     'movie_id': movie_id,
+                    'partner_id': partner_id,
+                    'partner_username': partner_username,
                     'match_count': match_count,
                     'last_match_at': last_match_at.isoformat() if last_match_at else None
                 })
@@ -230,7 +244,6 @@ def get_matches():
     except Exception as e:
         print(f"❌ ERRO ao buscar matches: {str(e)}")
         return jsonify({'success': False, 'error': str(e)[:200]}), 500
-
 
 # ============================================================================
 # JAVASCRIPT ATUALIZADO PARA O FRONTEND
@@ -678,4 +691,5 @@ def get_user_connections():
     except Exception as e:
         print(f"❌ ERRO ao buscar conexões: {str(e)}")
         return jsonify({'connections': []})
+
 
