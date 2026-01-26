@@ -116,8 +116,8 @@ a {
   user-select: none;
 }
 
-#button-58:hover,
-:focus {
+.button-58:hover,
+.button-58:focus {
   color: #ffffff;
   background: #ff0000;
   border: 1px solid #ff0000;
