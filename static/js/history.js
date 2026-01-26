@@ -102,11 +102,6 @@ function createMatchElement(match, container, index) {
     titleElement.className = 'match-title';
     titleElement.textContent = `Carregando...`;
     
-    // Criar informação do parceiro
-    const partnerElement = document.createElement('p');
-    partnerElement.className = 'match-partner';
-    partnerElement.textContent = `Com: ${match.partner_username}`;
-    
     // Adicionar elementos ao match
     matchElement.appendChild(imgElement);
     matchElement.appendChild(titleElement);
@@ -223,12 +218,6 @@ function addBasicStyles() {
                 margin: 0 0 5px 0;
                 color: white;
             }
-            
-            .match-partner {
-                font-size: 14px;
-                margin: 0;
-                color: #00adb5;
-            }
         `;
         document.head.appendChild(style);
     }
@@ -239,3 +228,4 @@ document.addEventListener('DOMContentLoaded', function() {
     addBasicStyles();
     console.log("✅ JavaScript de matches carregado e pronto!");
 });
+
