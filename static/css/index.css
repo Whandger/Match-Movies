@@ -209,7 +209,7 @@ div.title {
 }
 
 div.connect{
-  width: 50vw;
+  width: 65vw;
   height: 4vh;
   grid-row: 3;
   grid-column: 1;
@@ -630,3 +630,4 @@ div.desc {
       left: -63%;
   }
 }
+
