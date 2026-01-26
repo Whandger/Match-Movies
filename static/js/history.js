@@ -223,6 +223,11 @@ function addBasicStyles() {
                 margin: 0 0 5px 0;
                 color: white;
             }
+            .match-partner {
+                font-size: 14px;
+                margin: 0;
+                color: #00adb5;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -233,5 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
     addBasicStyles();
     console.log("✅ JavaScript de matches carregado e pronto!");
 });
+
 
 
