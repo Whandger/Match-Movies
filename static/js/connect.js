@@ -64,7 +64,8 @@ async function connectUsers() {
         if (data.success) {
             alert("✅ Conectado com sucesso!");
             closeModal("connectModal");
-            updateConnectionUI(true, data.partner_id);
+            // Passa partner_id e partner_username para atualizar a UI
+            updateConnectionUI(true, data.partner_id, data.partner_username);
         } else {
             alert("❌ " + data.message);
         }
@@ -79,16 +80,16 @@ async function connectUsers() {
 }
 
 // Update UI when connected
-function updateConnectionUI(isConnected, partnerId = null) {
+function updateConnectionUI(isConnected, partnerId = null, partnerUsername = null) {
     const connectElement = document.getElementById("connect");
     
-    if (isConnected) {
-        connectElement.textContent = "✓ Conectado";
-        connectElement.style.color = "#4CAF50";
+    if (isConnected && partnerUsername) {
+        connectElement.textContent = `Conectado com ${partnerUsername}`;
+        connectElement.style.color = "rgb(0 0 0)";
         connectElement.style.pointerEvents = "none";
         currentConnection = partnerId;
     } else {
-        connectElement.textContent = "Connect with +";
+        connectElement.textContent = "Conecte-se";
         connectElement.style.color = "";
         connectElement.style.pointerEvents = "auto";
         currentConnection = null;
@@ -107,7 +108,8 @@ async function checkExistingConnection() {
         
         if (data.connections && data.connections.length > 0) {
             const connection = data.connections[0];
-            updateConnectionUI(true, connection.partner_id);
+            // Agora também passa partner_username se disponível
+            updateConnectionUI(true, connection.partner_id, connection.partner_username);
         }
     } catch (error) {
         console.error('Erro ao verificar conexões:', error);
