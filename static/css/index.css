@@ -84,7 +84,7 @@ footer {
   color: white;
   font-size: 0.9rem;
   text-align: center;
-  z-index: 9999;
+  z-index: 9990;
 }
 
 /* MODAL HISTÓRICO - Com dvh */
@@ -95,7 +95,7 @@ footer {
   width: 100vw;
   height: 94dvh; /* 🔥 dvh para tela cheia */
   background-color: rgb(68, 70, 71);
-  z-index: 9998;
+  z-index: 9989;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -554,7 +554,7 @@ div.desc {
   width: 100%;
   height: 100dvh; /* 🔥 dvh aqui também */
   background: rgba(0,0,0,0.95);
-  z-index: 1000;
+  z-index: 9999;
   justify-content: center;
   align-items: center;
 }
