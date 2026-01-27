@@ -9,6 +9,8 @@
         <link rel="icon" href="" id="favicon">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/DropDownUser.css') }}">
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
       </head>
 
       <body>
@@ -18,10 +20,10 @@
           </div>
           <!-- Modal para o menu de conexão -->
           <div class="connect"> 
-            <a href="#" id="connect">Conecte-se</a>
+            <a href="#" id="connect"><i class="fa-solid fa-user-plus"></i></a>
               <div id="connectModal" style="display: none;">
-                <input id="connectInput" type="id" placeholder="Id de usuario">
-                <button id="connectButton" class="button" type="submit">Connect</button>
+                <input id="connectInput" type="id" placeholder="Id de usuario para conectar">
+                <button id="connectButton" class="button" type="submit">Connectar</button>
             </div>
           </div>
 
@@ -30,14 +32,12 @@
             <div class="navbar1">
                 <div class="dropdown1">
                     <button class="dropbtn1" id="username">
-                        <b>{{ session.get('username') }}</b>
-                          
-                        <i class="fa fa-caret-down"></i>
+                      <i class="fa-solid fa-user"></i>
                     </button>
                     <div class="dropdown-content1" style="right:0">
-                        <b>Id: {{ session.get('user_id') }}</b>
-                        <a href="#">Change Password</a>
-                        <a href="{{ url_for('login.logout') }}" id="logoutbtn">Logout</a>
+                        <b>Id: {{ session.get('user_id') }}<br></b>
+                        <b></b>
+                        <a href="{{ url_for('login.logout') }}" id="logoutbtn">Sair</a>
                     </div> 
                 </div>
             </div>

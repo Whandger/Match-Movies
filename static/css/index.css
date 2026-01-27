@@ -33,9 +33,8 @@ body {
 /* HEADER - Com dvh */
 header {
   width: 100vw;
-  height: 10dvh; /* 🔥 dvh aqui também */
-  min-height: 60px;
-  text-align: center;
+  height: 9dvh;
+  max-height: 9dvh;
   background-color: rgb(255, 0, 0); 
   box-shadow: rgba(255, 0, 0, 0.849) 1vh 0.01vh 0vh 1vh;  
   display: grid;
@@ -204,25 +203,31 @@ footer {
 div.title {
   grid-row: 1;
   grid-column: 2 span 2;
+  text-align: center;
   width: 100vw;
   height: 3vh;
 }
 
 div.connect{
-  width: 65vw;
-  height: 4vh;
+  width: 8vw;
   grid-row: 3;
+  font-size: 1rem;
   grid-column: 1;
   display: flex;
   flex-direction: column;
+  padding-left:5dvw ;
 }
 
 #connectModal{
+
   margin-left: 5vh;
   width: 60vw;
-  height: 10vh;
-  background-color: rgb(145, 145, 145);
+  height: 9vh;
+  background-color: rgb(255, 0, 0);
   z-index: 2;
+  position: absolute;
+  margin-left: -5dvw;
+  margin-top: 3.3dvh;
 }
 
 ::placeholder{
@@ -233,13 +238,14 @@ div.connect{
   width: 60vw;
   height: 5vh;
   font-size: 1.1rem;
+  text-align: center;
 }
 
 #connectButton {
   font-size: 1.2rem;
   width: 60vw;
   height: 4vh;
-  background-color: azure;
+  background-color: rgb(177, 0, 0);
 }
 
 div.profile{
@@ -250,7 +256,7 @@ div.profile{
 }
 
 h1 {
-  font: 2.2em sans-serif;
+  font: 1.9em sans-serif;
 }
 
 h2 {
@@ -630,4 +636,3 @@ div.desc {
       left: -63%;
   }
 }
-

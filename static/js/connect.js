@@ -84,15 +84,10 @@ function updateConnectionUI(isConnected, partnerId = null, partnerUsername = nul
     const connectElement = document.getElementById("connect");
     
     if (isConnected && partnerUsername) {
-        connectElement.textContent = `Conectado com ${partnerUsername}`;
+        connectElement.innerHTML = '<i class="fa-solid fa-link"></i>';
         connectElement.style.color = "rgb(0 0 0)";
         connectElement.style.pointerEvents = "none";
         currentConnection = partnerId;
-    } else {
-        connectElement.textContent = "Conecte-se";
-        connectElement.style.color = "";
-        connectElement.style.pointerEvents = "auto";
-        currentConnection = null;
     }
 }
 
