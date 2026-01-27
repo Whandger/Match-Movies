@@ -222,7 +222,7 @@ div.connect{
 
   margin-left: 5vh;
   width: 60vw;
-  height: 9vh;
+  height:3vh;
   background-color: rgb(255, 0, 0);
   z-index: 2;
   position: absolute;
@@ -236,7 +236,7 @@ div.connect{
 
 #connectInput {
   width: 60vw;
-  height: 5vh;
+  height: 3dvh;
   font-size: 1.1rem;
   text-align: center;
 }
@@ -244,7 +244,7 @@ div.connect{
 #connectButton {
   font-size: 1.2rem;
   width: 60vw;
-  height: 4vh;
+  height: 4dvh;
   background-color: rgb(177, 0, 0);
 }
 

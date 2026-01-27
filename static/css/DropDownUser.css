@@ -8,7 +8,6 @@
 .navbar1 {
   display: flex;
   align-items: center;
-  height: 0.3dvh;
 }
 
 /* Links normais da navbar (não está sendo usado, mas mantido por segurança) */
@@ -33,14 +32,13 @@
   border: none;
   outline: none;
   color: #333;
-  padding: 1.1dvh 5dvw;
+  padding: 0dvh 5dvw;
   background-color: inherit;
   font-family: inherit;
   margin: 0;
   display: inline-block;
   white-space: nowrap;
   cursor: pointer;
-  margin-top:2dvh;
 }
 
 /* Conteúdo do dropdown */
@@ -67,7 +65,7 @@
 
 /* Hover nos itens do menu */
 .dropdown-content1 a:hover {
-  background-color: #6d0000;
+  background-color: #c20000;
 }
 
 /* Exibir o menu ao passar o mouse */
