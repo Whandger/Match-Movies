@@ -35,7 +35,6 @@ header {
   width: 100vw;
   height: 10dvh; /* 🔥 dvh aqui também */
   min-height: 60px;
-  text-align: center;
   background-color: rgb(255, 0, 0); 
   box-shadow: rgba(255, 0, 0, 0.849) 1vh 0.01vh 0vh 1vh;  
   display: grid;
@@ -204,17 +203,19 @@ footer {
 div.title {
   grid-row: 1;
   grid-column: 2 span 2;
+  text-align: center;
   width: 100vw;
   height: 3vh;
 }
 
 div.connect{
-  width: 50vw;
+  width: 65vw;
   grid-row: 3;
   font-size: 0.9rem;
   grid-column: 1;
   display: flex;
   flex-direction: column;
+  padding-left:2dvw ;
 }
 
 #connectModal{
