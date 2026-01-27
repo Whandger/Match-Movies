@@ -601,6 +601,11 @@ div.desc {
   border-radius: 8px;
 }
 
+/* MUDANÇA DE COR DO CARD CONFORME MATCH*/
+
+
+
+
 /* Responsividade para diferentes tamanhos de tela */
 @media (max-width: 768px) {
   .trailer-content {

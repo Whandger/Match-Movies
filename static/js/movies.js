@@ -4,54 +4,100 @@
 
 let currentMovie = null;
 let cardInner = document.querySelector(".cardInner");
+let buttonsEnabled = true;
 
 // ============================================
-// FUNÇÕES DO MODAL DE TRAILER
+// FUNÇÕES PARA CONTROLE DOS BOTÕES
 // ============================================
 
-function openTrailerInModal(trailerUrl, movieTitle) {
-    console.log(`Abrindo trailer de: ${movieTitle} no modal`);
-    
-    if (!trailerUrl) {
-        alert(`Trailer não disponível para ${movieTitle}`);
-        return;
-    }
-
-    const videoId = extractYouTubeId(trailerUrl);
-    if (!videoId) {
-        alert('URL do trailer inválida');
-        return;
-    }
-
-    const iframe = document.querySelector('.trailer-iframe');
-    if (!iframe) {
-        console.error('Iframe do trailer não encontrado');
-        alert('Erro ao carregar trailer');
-        return;
-    }
-
-    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-    showTrailerModal();
+function disableButtons() {
+    buttonsEnabled = false;
+    const buttons = document.querySelectorAll('.reaction a');
+    buttons.forEach(button => {
+        button.style.pointerEvents = 'none';
+        button.style.opacity = '0.5';
+        button.style.cursor = 'not-allowed';
+        button.style.filter = 'grayscale(80%)';
+        button.style.transition = 'all 0.3s ease';
+    });
 }
 
-function showTrailerModal() {
-    const modal = document.querySelector('.trailer-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
+function enableButtons() {
+    buttonsEnabled = true;
+    const buttons = document.querySelectorAll('.reaction a');
+    buttons.forEach(button => {
+        button.style.pointerEvents = 'auto';
+        button.style.opacity = '1';
+        button.style.cursor = 'pointer';
+        button.style.filter = 'none';
+        button.style.transition = 'all 0.3s ease';
+    });
 }
 
-function closeTrailerModal() {
-    const modal = document.querySelector('.trailer-modal');
-    const iframe = document.querySelector('.trailer-iframe');
+// ============================================
+// FUNÇÕES PARA OVERLAY DE AÇÕES
+// ============================================
+
+function showCardColorFeedback(action) {
+    const cardInner = document.querySelector('.cardInner');
+    if (!cardInner) return;
     
-    if (modal) {
-        modal.style.display = 'none';
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        border-radius: inherit;
+        z-index: 5;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.4s ease-out;
+    `;
+    
+    let color;
+    switch(action) {
+        case 'like': color = 'rgba(52, 199, 89, 0.6)'; break;
+        case 'indicate': color = 'rgba(0, 122, 255, 0.6)'; break;
+        case 'dislike': color = 'rgba(255, 59, 48, 0.6)'; break;
     }
     
-    if (iframe) {
-        iframe.src = iframe.src.replace('?autoplay=1', '');
+    overlay.style.background = color;
+    cardInner.appendChild(overlay);
+    
+    setTimeout(() => overlay.style.opacity = '1', 10);
+    addCardTiltEffect(action);
+    
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 500);
+    }, 1000);
+}
+
+function addCardTiltEffect(action) {
+    const cardInner = document.querySelector('.cardInner');
+    if (!cardInner) return;
+    
+    let x = 0, rotation = 0;
+    
+    switch(action) {
+        case 'like':
+            x = -15;
+            rotation = -5;
+            break;
+        case 'dislike':
+            x = 15;
+            rotation = 5;
+            break;
     }
+    
+    cardInner.style.transform = `translateX(${x}px) rotate(${rotation}deg)`;
+    cardInner.style.transition = 'transform 0.3s ease-out';
+    
+    setTimeout(() => {
+        cardInner.style.transform = '';
+    }, 500);
 }
 
 // ============================================
@@ -67,17 +113,20 @@ function loadRandomMovie(retryCount = 0) {
         .catch(error => handleLoadError(error, retryCount, maxRetries));
 }
 
-function registerAction(action) {
-    if (!currentMovie) return;
+function processMovieData(data, retryCount) {
+    if (data.error) {
+        throw new Error('RETRY');
+    }
     
-    console.log('Registrando ação:', action, 'para filme:', currentMovie.id);
+    if (!data.poster_path) {
+        throw new Error('RETRY');
+    }
     
-    showActionFeedback(action);
-    resetCardPosition();
+    currentMovie = data;
+    console.log('✅ Filme carregado:', data.title, `(Tentativa: ${retryCount + 1})`);
     
-    setTimeout(() => {
-        sendActionToServer(action);
-    }, 300);
+    updateMovieDisplay(data);
+    enableButtons();
 }
 
 // ============================================
@@ -110,6 +159,7 @@ function updateTrailerButtonState(hasTrailer) {
 
 function showActionFeedback(action) {
     const buttons = document.querySelectorAll('.reaction a');
+    
     buttons.forEach(button => {
         if (button.id === action) {
             button.style.transform = 'scale(0.8)';
@@ -121,71 +171,36 @@ function showActionFeedback(action) {
             }, 300);
         }
     });
+    
+    showCardColorFeedback(action);
 }
 
+// 🔴 FUNÇÃO REMOVIDA/ALTERADA: showActionMessage não faz mais nada
 function showActionMessage(action, movieTitle) {
-    const messageElement = getOrCreateMessageElement();
-    const { message, emoji } = getActionMessage(action, movieTitle);
+    // Não faz nada - mensagem removida
+    // Mantém apenas log no console para debug
+    console.log(`Ação: ${action} em "${movieTitle}"`);
+}
+
+// ============================================
+// REGISTRAR AÇÃO (SEM MENSAGEM NA TELA)
+// ============================================
+
+function registerAction(action) {
+    if (!currentMovie || !buttonsEnabled) {
+        console.log('⛔ Botões bloqueados - ação ignorada');
+        return;
+    }
     
-    messageElement.innerHTML = `${emoji}<br>${message}`;
-    messageElement.style.display = 'block';
+    console.log('Registrando ação:', action, 'para filme:', currentMovie.id);
+    
+    disableButtons();
+    showActionFeedback(action);
+    resetCardPosition();
     
     setTimeout(() => {
-        messageElement.style.display = 'none';
-    }, 2000);
-}
-
-function showError(message) {
-    const moviePicDiv = document.querySelector('.moviePic');
-    moviePicDiv.innerHTML = createErrorHTML(message);
-    moviePicDiv.style.display = 'flex';
-    moviePicDiv.style.justifyContent = 'center';
-    moviePicDiv.style.alignItems = 'center';
-    moviePicDiv.style.background = '#f0f0f0';
-}
-
-// ============================================
-// FUNÇÕES AUXILIARES (UTILITIES)
-// ============================================
-
-function extractYouTubeId(url) {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
-}
-
-function handleApiResponse(response) {
-    if (!response.ok) {
-        throw new Error('Erro na requisição: ' + response.status);
-    }
-    return response.json();
-}
-
-function processMovieData(data, retryCount) {
-    if (data.error) {
-        throw new Error('RETRY');
-    }
-    
-    if (!data.poster_path) {
-        throw new Error('RETRY');
-    }
-    
-    currentMovie = data;
-    console.log('✅ Filme carregado:', data.title, `(Tentativa: ${retryCount + 1})`);
-    
-    updateMovieDisplay(data);
-}
-
-function handleLoadError(error, retryCount, maxRetries) {
-    if (error.message === 'RETRY' && retryCount < maxRetries) {
-        console.log(`🔄 Tentativa ${retryCount + 1} falhou, tentando novamente em 1 segundo...`);
-        setTimeout(() => {
-            loadRandomMovie(retryCount + 1);
-        }, 1000);
-    } else {
-        console.error('❌ Erro ao carregar filme:', error);
-        showError('Erro de conexão com o servidor. Recarregue a página.');
-    }
+        sendActionToServer(action);
+    }, 300);
 }
 
 function sendActionToServer(action) {
@@ -207,7 +222,9 @@ function sendActionToServer(action) {
     })
     .then(data => {
         console.log('✅ Ação registrada com sucesso:', data);
-        showActionMessage(action, currentMovie.title);
+        
+        // 🔴 NÃO chama showActionMessage() aqui
+        // Apenas log no console
         
         setTimeout(() => {
             loadRandomMovie();
@@ -215,8 +232,76 @@ function sendActionToServer(action) {
     })
     .catch(error => {
         console.error('❌ Erro ao registrar ação:', error);
-        loadRandomMovie();
+        setTimeout(() => {
+            loadRandomMovie();
+        }, 1000);
     });
+}
+
+// ============================================
+// CONFIGURAÇÃO DE EVENTOS
+// ============================================
+
+function setupReactionButtons() {
+    document.querySelectorAll('.reaction a').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!buttonsEnabled) {
+                console.log('⛔ Clique ignorado - botões desabilitados');
+                return;
+            }
+            
+            button.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                button.style.transform = '';
+            }, 200);
+            
+            const id = button.id;
+            if (id === 'like') {
+                registerAction('like');
+            } else if (id === 'indicate') {
+                registerAction('indicate');
+            } else if (id === 'dislike') {
+                registerAction('dislike');
+            }
+        });
+    });
+}
+
+// ============================================
+// ERRO HANDLING
+// ============================================
+
+function handleLoadError(error, retryCount, maxRetries) {
+    if (error.message === 'RETRY' && retryCount < maxRetries) {
+        console.log(`🔄 Tentativa ${retryCount + 1} falhou, tentando novamente em 1 segundo...`);
+        setTimeout(() => {
+            loadRandomMovie(retryCount + 1);
+        }, 1000);
+    } else {
+        console.error('❌ Erro ao carregar filme:', error);
+        showError('Erro de conexão com o servidor. Recarregue a página.');
+        enableButtons();
+    }
+}
+
+// ============================================
+// FUNÇÕES AUXILIARES (MANTIDAS)
+// ============================================
+
+function extractYouTubeId(url) {
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+}
+
+function handleApiResponse(response) {
+    if (!response.ok) {
+        throw new Error('Erro na requisição: ' + response.status);
+    }
+    return response.json();
 }
 
 function updatePosterImage(posterPath) {
@@ -263,38 +348,15 @@ function resetCardFlip() {
     }
 }
 
-function getOrCreateMessageElement() {
-    let messageElement = document.getElementById('actionMessage');
-    if (!messageElement) {
-        messageElement = document.createElement('div');
-        messageElement.id = 'actionMessage';
-        messageElement.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            z-index: 1000;
-            text-align: center;
-        `;
-        document.body.appendChild(messageElement);
-    }
-    return messageElement;
-}
-
-function getActionMessage(action, movieTitle) {
-    const messages = {
-        'like': { message: `Você curtiu "${movieTitle}"! 🎬`, emoji: '❤️' },
-        'dislike': { message: `Você não curtiu "${movieTitle}"! 👎`, emoji: '😞' },
-        'indicate': { message: `Você indicou "${movieTitle}"! 📤`, emoji: '👉' }
-    };
+function showError(message) {
+    const moviePicDiv = document.querySelector('.moviePic');
+    moviePicDiv.innerHTML = createErrorHTML(message);
+    moviePicDiv.style.display = 'flex';
+    moviePicDiv.style.justifyContent = 'center';
+    moviePicDiv.style.alignItems = 'center';
+    moviePicDiv.style.background = '#f0f0f0';
     
-    return messages[action] || { message: '', emoji: '' };
+    enableButtons();
 }
 
 function createErrorHTML(message) {
@@ -315,14 +377,28 @@ function createErrorHTML(message) {
 }
 
 // ============================================
-// CONFIGURAÇÃO DE EVENTOS
+// OUTRAS FUNÇÕES (OPCIONAIS - PODE REMOVER)
 // ============================================
 
-function setupEventListeners() {
-    setupCardFlip();
-    setupReactionButtons();
-    setupTrailerButton();
+// 🔴 Estas funções não são mais usadas, pode remover se quiser:
+
+function createOverlayElements() {
+    // Não é mais necessária
 }
+
+function getOrCreateMessageElement() {
+    // Não é mais necessária
+    return null;
+}
+
+function getActionMessage(action, movieTitle) {
+    // Não é mais necessária
+    return { message: '', color: '#000' };
+}
+
+// ============================================
+// CONFIGURAÇÃO DE EVENTOS RESTANTES
+// ============================================
 
 function setupCardFlip() {
     if (cardInner) {
@@ -332,28 +408,6 @@ function setupCardFlip() {
             }
         });
     }
-}
-
-function setupReactionButtons() {
-    document.querySelectorAll('.reaction a').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            button.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                button.style.transform = '';
-            }, 200);
-            
-            const id = button.id;
-            if (id === 'like') {
-                registerAction('like');
-            } else if (id === 'indicate') {
-                registerAction('indicate');
-            } else if (id === 'dislike') {
-                registerAction('dislike');
-            }
-        });
-    });
 }
 
 function setupTrailerButton() {
@@ -378,6 +432,60 @@ function setupTrailerButton() {
     });
 }
 
+function setupEventListeners() {
+    setupCardFlip();
+    setupReactionButtons();
+    setupTrailerButton();
+}
+
+// ============================================
+// FUNÇÕES DO MODAL DE TRAILER (MANTIDAS)
+// ============================================
+
+function openTrailerInModal(trailerUrl, movieTitle) {
+    console.log(`Abrindo trailer de: ${movieTitle} no modal`);
+    
+    if (!trailerUrl) {
+        alert(`Trailer não disponível para ${movieTitle}`);
+        return;
+    }
+
+    const videoId = extractYouTubeId(trailerUrl);
+    if (!videoId) {
+        alert('URL do trailer inválida');
+        return;
+    }
+
+    const iframe = document.querySelector('.trailer-iframe');
+    if (!iframe) {
+        console.error('Iframe do trailer não encontrado');
+        alert('Erro ao carregar trailer');
+        return;
+    }
+
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    showTrailerModal();
+}
+
+function showTrailerModal() {
+    const modal = document.querySelector('.trailer-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeTrailerModal() {
+    const modal = document.querySelector('.trailer-modal');
+    const iframe = document.querySelector('.trailer-iframe');
+    
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    if (iframe) {
+        iframe.src = iframe.src.replace('?autoplay=1', '');
+    }
+}
 
 // ============================================
 // INICIALIZAÇÃO DA APLICAÇÃO
