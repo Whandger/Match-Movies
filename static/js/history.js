@@ -3,7 +3,13 @@ let historyModalIsVisible = false
 // abrir modal
 async function openModalHistory(id) {
     try {
-        document.getElementById(id).style.display = "flex";
+        const modal = document.getElementById(id);
+        if (!modal) {
+            console.error(`❌ Modal com ID "${id}" não encontrado`);
+            return;
+        }
+        
+        modal.style.display = "flex";
         historyModalIsVisible = true;
         
         console.log("🎬 Modal de histórico aberto - Criando matches...");
@@ -16,6 +22,10 @@ async function openModalHistory(id) {
             },
             body: JSON.stringify({})
         });
+        
+        if (!createResponse.ok) {
+            throw new Error(`HTTP ${createResponse.status}`);
+        }
         
         const createData = await createResponse.json();
         console.log('📊 Resposta da criação de matches:', createData);
@@ -32,8 +42,11 @@ async function openModalHistory(id) {
 
 // Fechar modal
 function closeModalHistory(id) {
-    document.getElementById(id).style.display = "none";
-    historyModalIsVisible = false;
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.style.display = "none";
+        historyModalIsVisible = false;
+    }
 }
 
 // Eventos de abrir modal e fechar
@@ -52,16 +65,24 @@ async function loadMatches() {
     try {
         console.log("🔍 Carregando matches do banco...");
         const response = await fetch('/api/movies/matches');
-        const data = await response.json();
         
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
         console.log('📊 Dados recebidos:', data);
         
         const matchesContainer = document.getElementById('matchesContainer');
+        if (!matchesContainer) {
+            console.error('❌ Elemento matchesContainer não encontrado');
+            return;
+        }
         
         // Limpar container antes de adicionar novos matches
         matchesContainer.innerHTML = '';
         
-        if (data.success && data.matches.length > 0) {
+        if (data.success && data.matches && data.matches.length > 0) {
             console.log(`✅ Encontrados ${data.matches.length} matches`);
             
             // Para cada match, criar um novo elemento
@@ -115,23 +136,49 @@ function createMatchElement(match, container, index) {
     // Adicionar match ao container
     container.appendChild(matchElement);
     
-    // Buscar detalhes do filme
-    fetchMovieDetails(match.movie_id, imgElement, titleElement);
+    // Buscar detalhes do filme (com verificação de elementos)
+    fetchMovieDetails(match.movie_id, imgElement, titleElement, matchElement);
 }
 
-// 🎯 BUSCAR DETALHES DO FILME
-async function fetchMovieDetails(movieId, imgElement, titleElement) {
+// 🎯 BUSCAR DETALHES DO FILME (CORRIGIDA)
+async function fetchMovieDetails(movieId, imgElement, titleElement, matchElement) {
     try {
         console.log(`🔍 Buscando detalhes do filme ${movieId}...`);
+        
+        // Verificar se os elementos ainda existem no DOM antes de fazer a requisição
+        if (!matchElement || !document.body.contains(matchElement)) {
+            console.warn(`⚠️ Elemento do match ${movieId} removido do DOM`);
+            return;
+        }
+        
         const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=941fae9e612c2f209e18d77a5a760269&language=pt-BR`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
         const movieData = await response.json();
+        
+        // Verificar novamente se os elementos ainda existem
+        if (!document.body.contains(imgElement) || !document.body.contains(titleElement)) {
+            console.warn(`⚠️ Elementos do filme ${movieId} removidos durante carregamento`);
+            return;
+        }
         
         // Atualizar imagem
         if (movieData.poster_path) {
             imgElement.src = `https://image.tmdb.org/t/p/w200${movieData.poster_path}`;
             imgElement.alt = movieData.title;
             console.log(`🖼️ Imagem carregada: ${movieData.title}`);
+            
+            // Remover estilos de fallback se a imagem carregar
+            imgElement.style.backgroundColor = '';
+            imgElement.style.display = '';
+            imgElement.style.alignItems = '';
+            imgElement.style.justifyContent = '';
+            imgElement.innerHTML = '';
         } else {
+            // Manter fallback se não tiver imagem
             imgElement.style.backgroundColor = '#333';
             imgElement.style.width = '100px';
             imgElement.style.height = '150px';
@@ -152,16 +199,22 @@ async function fetchMovieDetails(movieId, imgElement, titleElement) {
         
     } catch (error) {
         console.error(`❌ Erro ao buscar detalhes do filme ${movieId}:`, error);
-        titleElement.textContent = `Filme ID: ${movieId}`;
         
-        // Imagem de fallback
-        imgElement.style.backgroundColor = '#333';
-        imgElement.style.width = '100px';
-        imgElement.style.height = '150px';
-        imgElement.style.display = 'flex';
-        imgElement.style.alignItems = 'center';
-        imgElement.style.justifyContent = 'center';
-        imgElement.innerHTML = '🎬';
+        // Verificar se os elementos ainda existem antes de modificar
+        if (titleElement && document.body.contains(titleElement)) {
+            titleElement.textContent = `Filme ID: ${movieId}`;
+        }
+        
+        if (imgElement && document.body.contains(imgElement)) {
+            // Manter fallback em caso de erro
+            imgElement.style.backgroundColor = '#333';
+            imgElement.style.width = '100px';
+            imgElement.style.height = '150px';
+            imgElement.style.display = 'flex';
+            imgElement.style.alignItems = 'center';
+            imgElement.style.justifyContent = 'center';
+            imgElement.innerHTML = '🎬';
+        }
     }
 }
 
@@ -176,6 +229,10 @@ async function testCreateMatches() {
             },
             body: JSON.stringify({})
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         
         const data = await response.json();
         console.log('✅ Resultado do teste:', data);
@@ -239,7 +296,3 @@ document.addEventListener('DOMContentLoaded', function() {
     addBasicStyles();
     console.log("✅ JavaScript de matches carregado e pronto!");
 });
-
-
-
-
