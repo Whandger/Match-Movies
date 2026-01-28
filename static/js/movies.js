@@ -416,41 +416,6 @@ function sendActionToServer(action) {
     });
 }
 
-function showActionFeedback(action) {
-    const cardInner = document.querySelector('.cardInner');
-    if (!cardInner) return;
-    
-    let color;
-    switch(action) {
-        case 'like': color = 'rgba(52, 199, 89, 0.6)'; break;
-        case 'indicate': color = 'rgba(0, 122, 255, 0.6)'; break;
-        case 'dislike': color = 'rgba(255, 59, 48, 0.6)'; break;
-    }
-    
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        border-radius: inherit;
-        z-index: 5;
-        pointer-events: none;
-        background: ${color};
-        opacity: 0;
-        transition: opacity 0.4s ease-out;
-    `;
-    
-    cardInner.appendChild(overlay);
-    
-    setTimeout(() => overlay.style.opacity = '1', 10);
-    setTimeout(() => {
-        overlay.style.opacity = '0';
-        setTimeout(() => overlay.remove(), 500);
-    }, 1000);
-}
-
 // ============================================
 // ERRO HANDLING
 // ============================================
@@ -628,3 +593,4 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('❌ Erro ao verificar backend:', error));
 
 });
+
