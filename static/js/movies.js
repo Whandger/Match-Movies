@@ -82,6 +82,92 @@ function enableButtons() {
         button.style.filter = 'none';
     });
 }
+// ============================================
+// ANIMAÇÕES VISUAIS (DA VERSÃO ANTIGA)
+// ============================================
+
+function showCardColorFeedback(action) {
+    const cardInner = document.querySelector('.cardInner');
+    if (!cardInner) return;
+    
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        border-radius: inherit;
+        z-index: 5;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.4s ease-out;
+    `;
+    
+    let color;
+    switch(action) {
+        case 'like': color = 'rgba(52, 199, 89, 0.6)'; break;
+        case 'indicate': color = 'rgba(0, 122, 255, 0.6)'; break;
+        case 'dislike': color = 'rgba(255, 59, 48, 0.6)'; break;
+    }
+    
+    overlay.style.background = color;
+    cardInner.appendChild(overlay);
+    
+    setTimeout(() => overlay.style.opacity = '1', 10);
+    addCardTiltEffect(action);
+    
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 500);
+    }, 1000);
+}
+
+function addCardTiltEffect(action) {
+    const cardInner = document.querySelector('.cardInner');
+    if (!cardInner) return;
+    
+    let x = 0, rotation = 0;
+    
+    switch(action) {
+        case 'like':
+            x = -15;
+            rotation = -5;
+            break;
+        case 'dislike':
+            x = 15;
+            rotation = 5;
+            break;
+        case 'indicate':
+            x = 0;
+            rotation = 0;
+            break;
+    }
+    
+    cardInner.style.transform = `translateX(${x}px) rotate(${rotation}deg)`;
+    cardInner.style.transition = 'transform 0.3s ease-out';
+    
+    setTimeout(() => {
+        cardInner.style.transform = '';
+    }, 500);
+}
+
+function showButtonAnimation(action) {
+    const buttons = document.querySelectorAll('.reaction a');
+    
+    buttons.forEach(button => {
+        if (button.id === action) {
+            // Animação de clique no botão
+            button.style.transform = 'scale(0.85)';
+            button.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+                button.style.opacity = '1';
+            }, 200);
+        }
+    });
+}
 
 // ============================================
 // FUNÇÕES DE API
@@ -540,4 +626,5 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => console.log('✅ Status do backend:', data))
         .catch(error => console.error('❌ Erro ao verificar backend:', error));
+
 });
