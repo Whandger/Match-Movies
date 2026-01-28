@@ -208,6 +208,7 @@ function displayMovie(movieData) {
     console.log('🎬 Dados COMPLETOS do filme:', movieData);
     console.log('📷 Poster path:', movieData.poster_path);
     console.log('🎭 Gêneros disponíveis:', movieData.genres);
+    console.log('🎬 Trailer URL:', movieData.trailer_url);
     
     if (!movieData.poster_path) {
         console.error('❌ ERRO: Filme sem poster_path!', movieData);
@@ -292,22 +293,37 @@ function updatePosterImage(posterPath) {
 
 async function fetchMovieDetails(movieId) {
     try {
+        console.log(`🔍 Buscando detalhes do filme ${movieId}...`);
         const response = await fetch(`/api/movies/movie_details/${movieId}`);
         const data = await response.json();
         
+        console.log('📊 Resposta dos detalhes:', data);
+        
         if (data.success && data.details) {
             if (data.details.trailer_url) {
+                console.log(`✅ Trailer encontrado: ${data.details.trailer_url}`);
                 currentMovie.trailer_url = data.details.trailer_url;
                 updateTrailerButtonState(true);
+            } else {
+                console.log(`❌ Nenhum trailer nos detalhes`);
+                updateTrailerButtonState(false);
             }
         }
     } catch (error) {
         console.log('⚠️ Detalhes extras não carregados:', error);
+        updateTrailerButtonState(false);
     }
 }
 
 function updateTrailerButtonState(hasTrailer) {
     const trailerBtn = document.querySelector('.trailer button');
+    
+    if (!trailerBtn) {
+        console.error('❌ Botão de trailer não encontrado');
+        return;
+    }
+    
+    console.log('🎬 Atualizando botão de trailer:', hasTrailer ? 'ATIVADO' : 'DESATIVADO');
     
     if (!hasTrailer) {
         trailerBtn.disabled = true;
@@ -315,11 +331,13 @@ function updateTrailerButtonState(hasTrailer) {
         trailerBtn.style.cursor = 'not-allowed';
         trailerBtn.title = 'Trailer não disponível';
         trailerBtn.style.transform = 'scale(1)';
+        trailerBtn.textContent = '🎬 Trailer Indisponível';
     } else {
         trailerBtn.disabled = false;
         trailerBtn.style.opacity = '1';
         trailerBtn.style.cursor = 'pointer';
         trailerBtn.title = 'Assistir trailer';
+        trailerBtn.textContent = '🎬 Assistir Trailer';
         // Animação de ativação do botão
         trailerBtn.style.transform = 'scale(1.05)';
         setTimeout(() => {
@@ -552,6 +570,8 @@ function setupCardFlip() {
 function setupTrailerButton() {
     const trailerBtn = document.querySelector('.trailer button');
     if (trailerBtn) {
+        console.log('🎬 Configurando botão de trailer...');
+        
         // Efeito hover
         trailerBtn.addEventListener('mouseenter', function() {
             if (!this.disabled) {
@@ -567,17 +587,25 @@ function setupTrailerButton() {
         // Clique
         trailerBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            if (this.disabled) return;
+            console.log('🎬 Botão de trailer clicado');
             
+            if (this.disabled) {
+                console.log('❌ Botão desativado - trailer não disponível');
+                return;
+            }
+            
+            // Animação de clique
             this.style.transform = 'scale(0.95)';
             setTimeout(() => {
                 this.style.transform = 'scale(1)';
             }, 200);
             
             if (currentMovie && currentMovie.trailer_url) {
+                console.log('🎬 Abrindo trailer:', currentMovie.trailer_url);
                 openTrailerInModal(currentMovie.trailer_url, currentMovie.title);
             } else {
-                alert('Trailer não disponível');
+                console.log('❌ Nenhum trailer disponível');
+                alert('Trailer não disponível para este filme');
             }
         });
     }
@@ -590,65 +618,155 @@ function setupEventListeners() {
 }
 
 // ============================================
-// TRAILER MODAL (MANTIDO IGUAL)
+// TRAILER MODAL (CORREÇÃO COMPLETA)
 // ============================================
 
 function extractYouTubeId(url) {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(:=mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
+    if (!url) {
+        console.log('❌ URL vazia em extractYouTubeId');
+        return null;
+    }
+    
+    console.log('🔍 Analisando URL:', url);
+    
+    // Remove espaços e limpa a URL
+    url = url.trim();
+    
+    // Padrões comuns do YouTube
+    const patterns = [
+        // youtube.com/watch?v=ID
+        /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+        // youtu.be/ID
+        /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+        // youtube.com/embed/ID
+        /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+        // youtube.com/v/ID
+        /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+        // URL com outros parâmetros: ?v=ID&...
+        /[?&]v=([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (let i = 0; i < patterns.length; i++) {
+        const match = url.match(patterns[i]);
+        if (match && match[1]) {
+            console.log(`✅ ID encontrado com padrão ${i}: ${match[1]}`);
+            return match[1];
+        }
+    }
+    
+    console.log('❌ Nenhum ID do YouTube encontrado');
+    console.log('🔄 Tentando extração manual...');
+    
+    // Fallback: tenta encontrar qualquer sequência de 11 caracteres alfanuméricos
+    const manualMatch = url.match(/([a-zA-Z0-9_-]{11})/);
+    if (manualMatch && manualMatch[1]) {
+        console.log(`✅ ID extraído manualmente: ${manualMatch[1]}`);
+        return manualMatch[1];
+    }
+    
+    console.log('❌ Falha total na extração do ID');
+    return null;
 }
 
 function openTrailerInModal(trailerUrl, movieTitle) {
+    console.log('🎬 ===========================================');
+    console.log('🎬 INICIANDO ABERTURA DO TRAILER');
+    console.log('🎬 Filme:', movieTitle);
+    console.log('🎬 URL recebida:', trailerUrl);
+    console.log('🎬 ===========================================');
+    
     if (!trailerUrl) {
-        alert(`Trailer não disponível para ${movieTitle}`);
+        console.log('❌ ERRO: trailerUrl é null ou undefined');
+        alert(`Trailer não disponível para "${movieTitle}"`);
         return;
     }
-
+    
+    if (typeof trailerUrl !== 'string') {
+        console.log('❌ ERRO: trailerUrl não é uma string:', typeof trailerUrl);
+        alert('Erro: URL do trailer inválida');
+        return;
+    }
+    
     const videoId = extractYouTubeId(trailerUrl);
+    console.log('🎬 Video ID extraído:', videoId);
+    
     if (!videoId) {
-        alert('URL do trailer inválida');
+        console.log('❌ Não foi possível extrair o ID do YouTube');
+        console.log('🔄 Tentando fallback: abrir em nova aba...');
+        
+        try {
+            window.open(trailerUrl, '_blank', 'noopener,noreferrer');
+            console.log('✅ Aberto em nova aba com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao abrir em nova aba:', error);
+            alert(`Não foi possível abrir o trailer para "${movieTitle}"`);
+        }
         return;
     }
-
+    
     const iframe = document.querySelector('.trailer-iframe');
     if (!iframe) {
-        alert('Erro ao carregar trailer');
+        console.error('❌ ERRO CRÍTICO: Elemento .trailer-iframe não encontrado!');
+        console.error('Verifique se o HTML contém: <iframe class="trailer-iframe"></iframe>');
+        alert('Erro interno: Player de trailer não encontrado');
         return;
     }
-
-    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-    showTrailerModal();
+    
+    console.log('🎬 Iframe encontrado, configurando...');
+    
+    // Limpa o iframe primeiro
+    iframe.src = '';
+    
+    // Cria a URL de embed
+    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+    console.log('🎬 URL de embed:', embedUrl);
+    
+    // Pequeno delay para garantir que o DOM está pronto
+    setTimeout(() => {
+        iframe.src = embedUrl;
+        console.log('✅ Iframe configurado com sucesso');
+        showTrailerModal();
+    }, 100);
 }
 
 function showTrailerModal() {
+    console.log('🎬 Mostrando modal do trailer');
     const modal = document.querySelector('.trailer-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.style.opacity = '0';
-        modal.style.transform = 'scale(0.9)';
-        setTimeout(() => {
-            modal.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            modal.style.opacity = '1';
-            modal.style.transform = 'scale(1)';
-        }, 10);
+    
+    if (!modal) {
+        console.error('❌ ERRO: Elemento .trailer-modal não encontrado!');
+        console.error('Verifique se o HTML contém a estrutura do modal');
+        return;
     }
+    
+    modal.style.display = 'flex';
+    modal.style.opacity = '0';
+    
+    // Pequeno delay para garantir transição suave
+    setTimeout(() => {
+        modal.style.transition = 'opacity 0.3s ease';
+        modal.style.opacity = '1';
+        console.log('✅ Modal exibido com sucesso');
+    }, 50);
 }
 
 function closeTrailerModal() {
+    console.log('🎬 Fechando modal do trailer');
     const modal = document.querySelector('.trailer-modal');
     const iframe = document.querySelector('.trailer-iframe');
     
     if (modal) {
         modal.style.opacity = '0';
-        modal.style.transform = 'scale(0.9)';
+        
         setTimeout(() => {
             modal.style.display = 'none';
+            console.log('✅ Modal escondido');
         }, 300);
     }
     
     if (iframe) {
-        iframe.src = iframe.src.replace('?autoplay=1', '');
+        iframe.src = '';
+        console.log('✅ Iframe limpo (vídeo pausado)');
     }
 }
 
@@ -676,6 +794,25 @@ function stopMovieStreaming() {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Inicializando aplicação com streaming e animações...');
+    console.log('🔧 Verificando elementos do DOM...');
+    
+    // Verifica elementos essenciais
+    const essentialElements = [
+        '.cardInner',
+        '.moviePic',
+        '.trailer button',
+        '.trailer-iframe',
+        '.trailer-modal',
+        '#titleName',
+        '#description',
+        '#genre'
+    ];
+    
+    essentialElements.forEach(selector => {
+        const element = document.querySelector(selector);
+        console.log(`${element ? '✅' : '❌'} ${selector}: ${element ? 'Encontrado' : 'NÃO ENCONTRADO'}`);
+    });
+    
     setupEventListeners();
     
     // Adicionar CSS para animações extras
@@ -747,7 +884,57 @@ function addAnimationStyles() {
             .cardInner {
                 transition: transform 0.6s ease !important;
             }
+            
+            /* Estilos para o modal de trailer */
+            .trailer-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+            
+            .trailer-modal-content {
+                width: 90%;
+                max-width: 900px;
+                position: relative;
+            }
+            
+            .trailer-iframe {
+                width: 100%;
+                height: 500px;
+                border: none;
+                border-radius: 10px;
+            }
+            
+            .close-trailer {
+                position: absolute;
+                top: -40px;
+                right: 0;
+                background: #ff4757;
+                color: white;
+                border: none;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                font-size: 20px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.2s ease;
+            }
+            
+            .close-trailer:hover {
+                transform: scale(1.1);
+            }
         `;
         document.head.appendChild(style);
+        console.log('✅ Estilos de animação adicionados');
     }
 }
