@@ -10,9 +10,97 @@ let isPreloading = false;
 let shouldPreload = true;
 
 // ============================================
-// SISTEMA DE STREAMING (1 FILME POR VEZ)
+// TRAILER MODAL (COLOCAR NO TOPO PARA SER DEFINIDA PRIMEIRO)
 // ============================================
 
+function extractYouTubeId(url) {
+    if (!url) return null;
+    
+    // Remove espaços
+    url = url.trim();
+    
+    // Padrões mais abrangentes para URLs do YouTube
+    const patterns = [
+        // youtube.com/watch?v=ID (com ou sem outros parâmetros)
+        /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+        // youtu.be/ID
+        /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+        // youtube.com/embed/ID
+        /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+        // youtube.com/v/ID
+        /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+        // Qualquer URL que contenha v=ID
+        /[?&]v=([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (let pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    
+    return null;
+}
+
+function openTrailerInModal(trailerUrl, movieTitle) {
+    if (!trailerUrl) {
+        alert(`Trailer não disponível para ${movieTitle}`);
+        return;
+    }
+
+    const videoId = extractYouTubeId(trailerUrl);
+    if (!videoId) {
+        alert('URL do trailer inválida');
+        return;
+    }
+
+    const iframe = document.querySelector('.trailer-iframe');
+    if (!iframe) {
+        alert('Erro ao carregar trailer');
+        return;
+    }
+
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    showTrailerModal();
+}
+
+function showTrailerModal() {
+    const modal = document.querySelector('.trailer-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.style.opacity = '0';
+        modal.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+            modal.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            modal.style.opacity = '1';
+            modal.style.transform = 'scale(1)';
+        }, 10);
+    }
+}
+
+function closeTrailerModal() {
+    const modal = document.querySelector('.trailer-modal');
+    const iframe = document.querySelector('.trailer-iframe');
+    
+    if (modal) {
+        modal.style.opacity = '0';
+        modal.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+    
+    if (iframe) {
+        iframe.src = iframe.src.replace('?autoplay=1', '');
+    }
+}
+
+// ============================================
+// O RESTO DO SEU CÓDIGO CONTINUA AQUI EXATAMENTE COMO ESTAVA
+// ============================================
+
+// SISTEMA DE STREAMING (1 FILME POR VEZ)
 async function preloadSingleMovie() {
     if (isPreloading || !shouldPreload) return;
     
@@ -587,40 +675,6 @@ function setupEventListeners() {
     setupCardFlip();
     setupReactionButtons();
     setupTrailerButton();
-}
-
-// ============================================
-// TRAILER MODAL 
-// ============================================
-
-function extractYouTubeId(url) {
-    if (!url) return null;
-    
-    // Remove espaços
-    url = url.trim();
-    
-    // Padrões mais abrangentes para URLs do YouTube
-    const patterns = [
-        // youtube.com/watch?v=ID (com ou sem outros parâmetros)
-        /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
-        // youtu.be/ID
-        /youtu\.be\/([a-zA-Z0-9_-]{11})/,
-        // youtube.com/embed/ID
-        /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
-        // youtube.com/v/ID
-        /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
-        // Qualquer URL que contenha v=ID
-        /[?&]v=([a-zA-Z0-9_-]{11})/
-    ];
-    
-    for (let pattern of patterns) {
-        const match = url.match(pattern);
-        if (match && match[1]) {
-            return match[1];
-        }
-    }
-    
-    return null;
 }
 
 // ============================================
