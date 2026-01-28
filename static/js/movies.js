@@ -375,20 +375,27 @@ function updateMovieDetails(movieData) {
 // REGISTRAR AÇÃO
 // ============================================
 
+// ============================================
+// REGISTRAR AÇÃO (CORRIGIDA)
+// ============================================
+
 function registerAction(action) {
     if (!currentMovie || !buttonsEnabled) return;
     
     console.log('📝 Registrando ação:', action, 'para filme:', currentMovie.id);
     
     disableButtons();
-    showActionFeedback(action);
+    
+    // Chama TODAS as animações
+    showCardColorFeedback(action);      // Feedback de cor no card
+    addCardTiltEffect(action);          // Animação de tilt
+    showButtonAnimation(action);        // Animação do botão
     resetCardPosition();
     
     setTimeout(() => {
         sendActionToServer(action);
     }, 300);
 }
-
 function sendActionToServer(action) {
     fetch('/api/movies/action', {
         method: 'POST',
@@ -593,4 +600,5 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('❌ Erro ao verificar backend:', error));
 
 });
+
 
