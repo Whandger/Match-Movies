@@ -574,17 +574,18 @@ div.desc {
 }
 
 .trailer-close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: fixed;
+  top: calc(44dvw + env(safe-area-inset-top));
+  right: 17dvh;
   background: red;
   color: white;
   border: none;
-  padding: 10px 15px;
-  cursor: pointer;
+  padding: 10px 17px;
   border-radius: 5px;
-  z-index: 1001;
+  cursor: pointer;
+  z-index: 2147483647;
   font-weight: bold;
+  pointer-events: auto;
 }
 
 .trailer-video-container {
@@ -601,26 +602,23 @@ div.desc {
   border-radius: 8px;
 }
 
-/* MUDANÇA DE COR DO CARD CONFORME MATCH*/
-
-
-
-
 /* Responsividade para diferentes tamanhos de tela */
-@media (max-width: 768px) {
+
+@media (min-height: 700px) {
   .trailer-content {
       padding: 15px;
       max-width: 95%;
       max-height: 95%;
   }
-  
+
   .trailer-close-btn {
-      top: 5px;
-      right: 5px;
-      padding: 8px 12px;
-      font-size: 14px;
-      top: 30%;
-      right: 17%;
+    top: calc(31dvh + env(safe-area-inset-top));
+    right: 5dvh;
+    padding: 15px 22px;
+  }
+  .trailer-iframe {
+    width: 83%;
+    height: 69%;
   }
 }
 
