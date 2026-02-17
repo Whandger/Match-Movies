@@ -316,8 +316,8 @@ def fetch_batch_random_movies(seen_movies, batch_size=5, max_attempts=15):
     categories = {
         "popular": 500,
         "top_rated": 500, 
-        "now_playing": 20,
-        "upcoming": 20
+        "now_playing": 15,
+        "upcoming": 15
     }
     
     movies_found = []
@@ -918,3 +918,4 @@ def health_check():
             'timestamp': time.time()
 
         }), 500
+
