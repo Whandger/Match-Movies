@@ -314,10 +314,10 @@ def fetch_single_random_movie_optimized(seen_movies, max_attempts=5):
 def fetch_batch_random_movies(seen_movies, batch_size=5, max_attempts=15):
     """Busca múltiplos filmes de uma vez para pré-carregamento"""
     categories = {
-        "popular": 100,
-        "top_rated": 100, 
-        "now_playing": 10,
-        "upcoming": 10
+        "popular": 500,
+        "top_rated": 500, 
+        "now_playing": 20,
+        "upcoming": 20
     }
     
     movies_found = []
@@ -916,4 +916,5 @@ def health_check():
             'status': 'unhealthy',
             'error': str(e)[:200],
             'timestamp': time.time()
+
         }), 500
