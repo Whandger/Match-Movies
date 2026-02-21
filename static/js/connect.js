@@ -91,7 +91,7 @@ function updateConnectionUI(isConnected, partnerId = null, partnerUsername = nul
     }
 }
 
-// Check existing connection on page load - CORRIGIDA COM PREFIXO /api/movies
+// Check existing connection on page load
 document.addEventListener('DOMContentLoaded', function() {
     checkExistingConnection();
 });
@@ -110,3 +110,4 @@ async function checkExistingConnection() {
         console.error('Erro ao verificar conexões:', error);
     }
 }
+
