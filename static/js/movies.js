@@ -375,10 +375,6 @@ function updateMovieDetails(movieData) {
 // REGISTRAR AÇÃO
 // ============================================
 
-// ============================================
-// REGISTRAR AÇÃO (CORRIGIDA)
-// ============================================
-
 function registerAction(action) {
     if (!currentMovie || !buttonsEnabled) return;
     
@@ -386,7 +382,7 @@ function registerAction(action) {
     
     disableButtons();
     
-    // Chama TODAS as animações
+    // Chama as animações
     showCardColorFeedback(action);      // Feedback de cor no card
     addCardTiltEffect(action);          // Animação de tilt
     showButtonAnimation(action);        // Animação do botão
@@ -600,5 +596,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('❌ Erro ao verificar backend:', error));
 
 });
+
 
 
