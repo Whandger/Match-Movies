@@ -15,22 +15,20 @@
   box-sizing: inherit;
 }
 
-/* 🔥 USANDO DVH COMO VOCÊ QUERIA */
 html, body {
-  height: 100dvh; /* 🔥 Agora usando dvh */
+  height: 100dvh; 
   width: 100%;
   overflow: hidden;
 }
 
 body {
   background-color: rgb(54, 14, 14);
-  display: flex; /* 🔥 CHAVE: Layout flexível */
-  flex-direction: column; /* 🔥 CHAVE: Organiza header, main, footer */
+  display: flex; 
+  flex-direction: column; 
   overflow-x: hidden;
-  min-height: 100dvh; /* 🔥 Garante altura mínima com dvh */
+  min-height: 100dvh; 
 }
 
-/* HEADER - Com dvh */
 header {
   width: 100vw;
   height: 9dvh;
@@ -44,36 +42,33 @@ header {
   flex-shrink: 0;
 }
 
-/* MAIN - Ocupa espaço disponível */
 main {
   width: 100vw;
-  flex: 1; /* 🔥 Ocupa TODO espaço disponível */
+  flex: 1; 
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative; /* Para o botão #history */
+  position: relative; 
   overflow: hidden;
 }
 
-/* FOOTER - Com dvh */
 footer {
   display: flex;
   justify-content: center;
   width: 100vw;
-  height: 6dvh; /* 🔥 dvh aqui também */
+  height: 6dvh; 
   min-height: 40px;
   background-color: #6e0000;
   flex-shrink: 0;
 }
 
-/* BOTÃO HISTÓRICO - Corrige posicionamento */
 #history {
-  position: absolute; /* Absoluto dentro do main */
-  bottom: 2dvh; /* Distância da base do main */
+  position: absolute; 
+  bottom: 2dvh;
   width: 17vw;
   min-width: 60px;
   max-width: 68px;
-  height: 8dvh; /* 🔥 dvh aqui também */
+  height: 8dvh;
   min-height: 50px;
   border-radius: 2vh;
   background-color: rgb(48, 48, 48);
@@ -87,13 +82,12 @@ footer {
   z-index: 9990;
 }
 
-/* MODAL HISTÓRICO - Com dvh */
 #historyModal {
-  position: fixed; /* Fixo na tela */
+  position: fixed; 
   top: 0;
   left: 0;
   width: 100vw;
-  height: 94dvh; /* 🔥 dvh para tela cheia */
+  height: 94dvh; 
   background-color: rgb(68, 70, 71);
   z-index: 9989;
   display: flex;
@@ -102,10 +96,9 @@ footer {
   overflow: hidden;
 }
 
-/* CARD - Mantendo suas medidas */
 .cardInner {
   width: 85vw;
-  height: 72dvh; /* 🔥 dvh aqui também */
+  height: 72dvh;
   max-height: 500px;
   background-color: rgb(134, 134, 134);
   border-radius: 2vh;
@@ -168,7 +161,7 @@ footer {
   }
 }
 
-/* 🔥 RESPONSIVIDADE PARA TELAS MUITO PEQUENAS */
+/* RESPONSIVIDADE PARA TELAS MUITO PEQUENAS */
 @media (max-height: 600px) {
   .cardInner {
       height: 65dvh;
@@ -177,7 +170,7 @@ footer {
   
 }
 
-/* 🔥 Para telas muito largas (tablets) */
+/* Para telas muito largas (tablets) */
 @media (min-width: 768px) and (min-height: 1024px) {
   .cardInner {
       height: 70dvh;
@@ -185,7 +178,7 @@ footer {
   }
 }
 
-/* 🔥 MELHORIA: Meta viewport para mobile */
+/* MELHORIA: Meta viewport para mobile */
 @media (max-width: 768px) {
   body {
       /* Garante que o conteúdo não ultrapasse a viewport */
@@ -198,7 +191,6 @@ footer {
   }
 }
 
-/* 🔥 Mantendo o resto do seu CSS ORIGINAL (apenas substitua as alturas com dvh onde apropriado) */
 
 div.title {
   grid-row: 1;
@@ -516,7 +508,7 @@ div.desc {
   text-align: left;
 }
 
-/* Suas animações existentes */
+/* animações existentes */
 @keyframes fadeIn {
   from {
       opacity: 0;
@@ -552,7 +544,7 @@ div.desc {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100dvh; /* 🔥 dvh aqui também */
+  height: 100dvh; 
   background: rgba(0,0,0,0.95);
   z-index: 9999;
   justify-content: center;
@@ -639,3 +631,4 @@ div.desc {
       left: -63%;
   }
 }
+
