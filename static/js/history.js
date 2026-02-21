@@ -14,7 +14,7 @@ async function openModalHistory(id) {
         
         console.log("🎬 Modal de histórico aberto - Criando matches...");
         
-        // 🎯 PRIMEIRO: Chamar API para criar/verificar matches
+        // Chama API para criar/verificar matches
         const createResponse = await fetch('/api/movies/check_and_create_matches', {
             method: 'POST',
             headers: {
@@ -30,12 +30,11 @@ async function openModalHistory(id) {
         const createData = await createResponse.json();
         console.log('📊 Resposta da criação de matches:', createData);
         
-        // 🎯 DEPOIS: Carregar os matches para mostrar
+        // Carregar os matches para mostrar
         await loadMatches();
         
     } catch (error) {
         console.error('❌ Erro ao abrir modal:', error);
-        // Mesmo assim tenta carregar os matches
         await loadMatches();
     }
 }
@@ -60,7 +59,7 @@ document.getElementById("history").onclick = function (e) {
     }
 };
 
-// 🎯 FUNÇÃO PARA CARREGAR MATCHES (chamada DEPOIS de criar matches)
+// FUNÇÃO PARA CARREGAR MATCHES
 async function loadMatches() {
     try {
         console.log("🔍 Carregando matches do banco...");
@@ -79,7 +78,7 @@ async function loadMatches() {
             return;
         }
         
-        // Limpar container antes de adicionar novos matches
+        // Limpa container antes de adicionar novos matches
         matchesContainer.innerHTML = '';
         
         if (data.success && data.matches && data.matches.length > 0) {
@@ -105,7 +104,7 @@ async function loadMatches() {
     }
 }
 
-// 🎯 FUNÇÃO PARA CRIAR UM NOVO ELEMENTO DE MATCH
+// FUNÇÃO PARA CRIAR UM NOVO ELEMENTO DE MATCH
 function createMatchElement(match, container, index) {
     console.log(`🎬 Criando elemento para match ${index + 1}:`, match);
     
@@ -140,7 +139,7 @@ function createMatchElement(match, container, index) {
     fetchMovieDetails(match.movie_id, imgElement, titleElement, matchElement);
 }
 
-// 🎯 BUSCAR DETALHES DO FILME (CORRIGIDA)
+// BUSCAR DETALHES DO FILME
 async function fetchMovieDetails(movieId, imgElement, titleElement, matchElement) {
     try {
         console.log(`🔍 Buscando detalhes do filme ${movieId}...`);
@@ -218,7 +217,7 @@ async function fetchMovieDetails(movieId, imgElement, titleElement, matchElement
     }
 }
 
-// 🎯 FUNÇÃO PARA TESTAR MANUALMENTE (opcional - para debugging)
+// FUNÇÃO PARA TESTAR MANUALMENTE
 async function testCreateMatches() {
     try {
         console.log("🧪 Testando criação de matches...");
@@ -247,7 +246,7 @@ async function testCreateMatches() {
     }
 }
 
-// 🎯 Adicionar CSS básico se não existir
+// Adicionar CSS básico
 function addBasicStyles() {
     if (!document.getElementById('matches-styles')) {
         const style = document.createElement('style');
@@ -291,8 +290,9 @@ function addBasicStyles() {
     }
 }
 
-// 🎯 Inicializar estilos quando a página carregar
+// Inicializar estilos quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
     addBasicStyles();
     console.log("✅ JavaScript de matches carregado e pronto!");
+
 });
